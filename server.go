@@ -199,8 +199,8 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 	})
 	mux.HandleFunc("/api/config", func(w http.ResponseWriter, r *http.Request) {
 		var q struct {
-			Sonido, Tema, Organismo, Oficina *string
-			Ultimos, Ausentes                *int
+			Sonido, Tema, Organismo, Oficina, TemaTV *string
+			Ultimos, Ausentes                        *int
 		}
 		if err := leerBody(r, &q); err != nil {
 			jsonErr(w, err)
@@ -212,6 +212,9 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 			}
 			if q.Tema != nil {
 				c.Tema = *q.Tema
+			}
+			if q.TemaTV != nil && temasTV[*q.TemaTV] {
+				c.TemaTV = *q.TemaTV
 			}
 			if q.Organismo != nil {
 				c.Organismo = *q.Organismo

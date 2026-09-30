@@ -181,3 +181,35 @@ body.oscuro .sw{background:#34415C}
 }
 .tr>span:last-child{overflow:hidden}
 .tr .pill{max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+
+/* estilo "Celeste y blanco" (se elige por PC en Configuración) */
+body.t-argentina{--bg:#EEF4FA;--sub:#F4F8FC;--line:#D8E4F0;--line2:#E4EDF6;--btnLine:#C6D6E8;--hl:#E2EEFA;--mesaBg:#DCEBFA;--mesaFg:#1F5E9C}
+body.t-argentina.oscuro{--bg:#0B1B33;--card:#12264A;--sub:#172E57;--line:#23406B;--line2:#1C3660;--btnLine:#34578A;--hl:#1B3A66;--mesaBg:#1D4674;--mesaFg:#BFDDF7}
+body.t-argentina .barra{background:#74ACDF;border-bottom:4px solid #fff;box-shadow:0 4px 0 #F6B40E}
+body.t-argentina .barra .sep{background:rgba(255,255,255,.55)}
+body.t-argentina .barra .con,body.t-argentina .barra .hora{color:#EAF3FC}
+body.t-argentina .barra .bb{border-color:rgba(255,255,255,.7)}
+body.t-argentina .barra .bb:hover{background:rgba(255,255,255,.18)}
+body.t-argentina .barra .bb.tv{background:#1D6B42;border-color:#1D6B42}
+body.t-argentina .barra .bb.tv.off{background:#9C3B33;border-color:#9C3B33}
+body.t-argentina .rol.mesa{background:#1F5E9C}
+body.t-argentina .rol.config{background:rgba(255,255,255,.25)}
+body.t-argentina.oscuro .barra{background:#0B1B33;border-bottom:0;box-shadow:none;position:relative}
+body.t-argentina.oscuro .barra::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,#74ACDF 0 33.3%,#fff 33.3% 66.6%,#74ACDF 66.6%)}
+body.t-argentina.oscuro .barra .sep{background:#23406B}
+body.t-argentina.oscuro .barra .con,body.t-argentina.oscuro .barra .hora{color:#A9C4E4}
+body.t-argentina.oscuro .barra .bb{border-color:#34578A}
+body.t-argentina.oscuro .rol.config{background:#23406B}
+
+/* selector de tema del televisor */
+.temas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:14px}
+.tema{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:8px;text-align:left}
+.tema:hover{border-color:var(--btnLine)}
+.tema.on{border-color:#2F6FDB;box-shadow:0 0 0 2px rgba(47,111,219,.25)}
+.tema .mini{height:74px;width:100%;border-radius:9px;overflow:hidden;display:block;position:relative}
+.tema .mini .t{height:14px;width:100%}
+.tema .mini .c{height:60px;width:100%;display:flex;align-items:stretch;gap:6px;padding:8px}
+.tema .mini .a{width:60%;border-radius:5px;padding:6px;display:flex;flex-direction:column;gap:4px}
+.tema .mini .a i{display:block;height:6px;border-radius:3px}
+.tema .mini .l{width:40%;border-radius:5px}
+.tema b{font-size:14px}.tema small{color:var(--muted);font-size:12px;line-height:1.35}

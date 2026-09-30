@@ -18,7 +18,20 @@
   let filtro = 'todos', busqueda = '';
   let popTV = false, tvs = null, buscandoTV = false;
   let versionInicial = null;
-  let tema = localStorage.getItem('tetoca-tema') || '';
+  let tema = '', estilo = 'clasico';
+  try { tema = localStorage.getItem('tetoca-tema') || ''; estilo = localStorage.getItem('tetoca-estilo') || 'clasico'; } catch (e) {}
+  function guardarLocal(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  // Temas del televisor: [id, nombre, descripción, fondo, barra, tarjeta, nombre, acento, panel]
+  const TEMAS_TV = [
+    ['noche', 'Noche', 'El de siempre. Oscuro, se lee bien en cualquier sala.', '#0A1120', '#0A1120', '#111B2E', '#fff', '#FFC857', '#0E1729'],
+    ['celeste', 'Celeste y blanco', 'Barra celeste, fondo claro y un Sol de Mayo suave.', '#EEF4FA', '#74ACDF', '#fff', '#0F2A4A', '#1F5FA8', '#fff'],
+    ['albiceleste', 'Albiceleste noche', 'Azul profundo con una franja celeste y blanca.', '#0B1B33', '#0B1B33', '#12284A', '#fff', '#F6B40E', '#0F2240'],
+    ['sol', 'Sol de Mayo', 'Tonos cálidos, papel y dorado.', '#FBF6EA', '#FBF6EA', '#fff', '#2B2014', '#B07A00', '#fff'],
+    ['claro', 'Claro neutro', 'Blanco y gris, sin colores fuertes.', '#F5F6F8', '#fff', '#fff', '#111827', '#2F6FDB', '#fff'],
+    ['contraste', 'Alto contraste', 'Negro y amarillo, letras más grandes. Para salas con mucha luz o gente mayor.', '#000', '#000', '#000', '#fff', '#FFE600', '#000'],
+    ['verde', 'Verde salud', 'Verde sereno y claro.', '#F1F7F4', '#1D6B5A', '#fff', '#12352D', '#1D6B5A', '#fff']
+  ];
 
   // ---------- íconos ----------
   const I = {
@@ -81,6 +94,7 @@
   function aplicarTema() {
     const t = tema || (V && V.config.tema) || 'claro';
     document.body.classList.toggle('oscuro', t === 'oscuro');
+    document.body.classList.toggle('t-argentina', estilo === 'argentina');
     return t;
   }
 
@@ -109,7 +123,7 @@
       ${rol === 'config' ? `<button class="bb" id="bVolver">${I.volver}Volver</button>` : `<button class="bb" id="bCfg" title="Configuración">${I.engr}<span class="lbl">Configuración</span></button>`}
       ${rol === 'mesa' ? `<button class="bb" id="bCargar" title="Cargar turnos del día (XLS)">${I.subir}<span class="lbl">Cargar turnos del día (XLS)</span></button>` : ''}`;
     $('bTV').onclick = () => { popTV = !popTV; if (popTV && !tvs) buscarTVs(); render(); };
-    $('bTema').onclick = () => { tema = temaAct === 'oscuro' ? 'claro' : 'oscuro'; try { localStorage.setItem('tetoca-tema', tema); } catch (e) {} render(); };
+    $('bTema').onclick = () => { tema = temaAct === 'oscuro' ? 'claro' : 'oscuro'; guardarLocal('tetoca-tema', tema); render(); };
     if ($('bCfg')) $('bCfg').onclick = () => irA('config');
     if ($('bVolver')) $('bVolver').onclick = () => irA(miConf().rol || 'rol');
     if ($('bCargar')) $('bCargar').onclick = () => $('archivo').click();
@@ -379,6 +393,7 @@
       <div class="cfgrid">
         <div class="card pad"><h2>Esta PC</h2><p class="s">Nombre: <strong style="color:var(--ink)">${esc(PC)}</strong></p>
           <div class="campo"><label>Esta PC es</label><div class="segc"><button data-rol="mesa" class="${yo.rol === 'mesa' ? 'on' : ''}">Mesa de entradas</button><button data-rol="caja" class="${yo.rol === 'caja' ? 'on' : ''}">Caja</button></div></div>
+          <div class="campo"><label>Estilo</label><div class="segc"><button data-estilo="clasico" class="${estilo !== 'argentina' ? 'on' : ''}">Clásico</button><button data-estilo="argentina" class="${estilo === 'argentina' ? 'on' : ''}">Celeste y blanco</button></div></div>
           <div class="campo"><label>Tema</label><div class="segc"><button data-tema="claro" class="${temaAct === 'claro' ? 'on' : ''}">${I.sol} Claro</button><button data-tema="oscuro" class="${temaAct === 'oscuro' ? 'on' : ''}">${I.luna} Oscuro</button></div></div>
           <div class="campo"><label for="cBox">Nombre del box</label><input type="text" id="cBox" value="${esc(yo.box || '')}" placeholder="Ej: Box 2">
             <button class="sw ${yo.mostrarBox ? 'on' : ''}" id="cMostrar" aria-label="Mostrar box en el TV"><i></i></button></div>
@@ -397,6 +412,11 @@
           ${u.disponible ? '<button class="btn" style="background:#1E54B0;color:#fff;border:0;padding:0 18px" id="cAplicar">Actualizar ahora</button>' : ''}
           ${u.hayAnterior ? '<button class="btn rojo" style="padding:0 18px" id="cAnterior">Volver a la versión anterior</button>' : ''}</div>
           <p class="nota">Las actualizaciones se bajan de internet. Los datos de los turnos nunca salen de la oficina.</p></div>
+        <div class="card pad" style="grid-column:1/-1"><h2>Tema del televisor</h2><p class="s">Cómo se ve la pantalla de la sala. Se cambia en el momento, sin reconectar el TV.</p>
+          <div class="temas">${TEMAS_TV.map(([id, n, d, bg, top, card, txt, acc, pan]) => `<button class="tema ${(c.temaTV || 'noche') === id ? 'on' : ''}" data-temtv="${id}">
+            <div class="mini" style="background:${bg};${id === 'contraste' ? 'outline:1px solid #FFE600;outline-offset:-1px' : ''}"><div class="t" style="background:${top};border-bottom:1px solid ${id === 'albiceleste' ? '#74ACDF' : 'rgba(128,128,128,.25)'}"></div>
+              <div class="c"><div class="a" style="background:${card};border:1px solid rgba(128,128,128,.25)"><i style="background:${txt};width:80%"></i><i style="background:${acc};width:45%"></i></div><div class="l" style="background:${pan};border:1px solid rgba(128,128,128,.25)"></div></div></div>
+            <b>${n}${id === 'noche' ? ' <span style="font-weight:600;color:var(--muted);font-size:12px">(actual)</span>' : ''}</b><small>${d}</small></button>`).join('')}</div></div>
         <div class="card pad" style="grid-column:1/-1"><h2>Televisor</h2><p class="s">Si el TV se conecta pero no muestra la pantalla de sala, probá el otro receptor. Los dos son gratuitos.</p>
           <div class="campo"><label>Receptor</label><div class="segc"><button data-rec="dashcast" class="${(c.tv.receptor || 'dashcast') === 'dashcast' ? 'on' : ''}">DashCast (recomendado)</button><button data-rec="urlcast" class="${c.tv.receptor === 'urlcast' ? 'on' : ''}">URL Cast Receiver</button></div>
           <a href="/tv" target="_blank" class="chico" style="text-decoration:none">Abrir pantalla de sala en el navegador</a></div></div>
@@ -404,7 +424,9 @@
     document.querySelectorAll('[data-play]').forEach((b) => { b.onclick = () => { const id = b.dataset.play; sonando = id; const d = T.tocar(id); vistaConfig(); setTimeout(() => { sonando = null; if (vista === 'config' && !enEdicion()) vistaConfig(); }, d * 1000); }; });
     document.querySelectorAll('[data-elegir]').forEach((b) => { b.onclick = () => { T.tocar(b.dataset.elegir); api('/api/config', { sonido: b.dataset.elegir }); }; });
     document.querySelectorAll('[data-rol]').forEach((b) => { b.onclick = () => api('/api/pc', { pc: PC, rol: b.dataset.rol }); });
-    document.querySelectorAll('[data-tema]').forEach((b) => { b.onclick = () => { tema = b.dataset.tema; localStorage.setItem('tetoca-tema', tema); render(); }; });
+    document.querySelectorAll('[data-tema]').forEach((b) => { b.onclick = () => { tema = b.dataset.tema; guardarLocal('tetoca-tema', tema); render(); }; });
+    document.querySelectorAll('[data-estilo]').forEach((b) => { b.onclick = () => { estilo = b.dataset.estilo; guardarLocal('tetoca-estilo', estilo); render(); }; });
+    document.querySelectorAll('[data-temtv]').forEach((b) => { b.onclick = () => api('/api/config', { temaTV: b.dataset.temtv }); });
     document.querySelectorAll('[data-rec]').forEach((b) => { b.onclick = () => api('/api/tv/receptor', { receptor: b.dataset.rec }); });
     $('cBox').onchange = () => api('/api/pc', { pc: PC, box: $('cBox').value.trim() });
     $('cMostrar').onclick = () => api('/api/pc', { pc: PC, mostrarBox: !yo.mostrarBox });

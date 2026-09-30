@@ -7,62 +7,108 @@
 <link rel="icon" href="/static/icono.png">
 <link rel="stylesheet" href="/static/fuentes.css">
 <style>
+/* Temas: cada uno redefine estas variables. "noche" es el de siempre. */
+body{--bg:#0A1120;--txt:#fff;--mut:#93A3BF;--top:transparent;--topB:#1C2740;--topTxt:#fff;--topSub:#93A3BF;--div:#2A3752;
+ --card:#111B2E;--cardB:#1F2C47;--flash:#24508f;--pre:#FFC857;--chipM:#7AB8FF;--chipC:#FFC857;--chipTxt:#0A1120;
+ --panel:#0E1729;--panelB:#1C2740;--itemB:#1C2740;--itemP:#C9A95A;--hora:#7F8FAD;--vacio:#56627A;
+ --tagMb:#1B3355;--tagMf:#A9CDFF;--tagCb:#3D2E12;--tagCf:#FFD78A;--tagAb:#45211F;--tagAf:#FFB4AB;
+ --ausB:#1A1216;--ausBd:#4A2426;--ausT:#FFB4AB;--ausI:#3A1F22;--ausH:#A88C8A;--pie:#0D1628;--pieTxt:#93A3BF;--pieDot:#3A4A68}
+body.t-celeste{--bg:#EEF4FA;--txt:#0F2A4A;--mut:#5B7593;--top:#74ACDF;--topB:#5E9AD3;--topTxt:#fff;--topSub:#EAF3FC;--div:rgba(255,255,255,.55);
+ --card:#fff;--cardB:#CFE0F1;--flash:#CFE3F7;--pre:#1F5FA8;--chipM:#74ACDF;--chipC:#F6B40E;--chipTxt:#0F2A4A;
+ --panel:#fff;--panelB:#CFE0F1;--itemB:#E1ECF7;--itemP:#1F5FA8;--hora:#7A92AE;--vacio:#9AB0C8;
+ --tagMb:#DDEBF8;--tagMf:#1F5FA8;--tagCb:#FDF0CF;--tagCf:#8A5A00;--tagAb:#FBE6E4;--tagAf:#A2332A;
+ --ausB:#FDF1F0;--ausBd:#F2C9C5;--ausT:#A2332A;--ausI:#F6DAD6;--ausH:#A57A74;--pie:#74ACDF;--pieTxt:#fff;--pieDot:#fff}
+body.t-albiceleste{--bg:#0B1B33;--txt:#fff;--mut:#A9C4E4;--top:#0B1B33;--topB:#23406B;--topTxt:#fff;--topSub:#A9C4E4;--div:#23406B;
+ --card:#12284A;--cardB:#23406B;--flash:#2A5A96;--pre:#F6B40E;--chipM:#74ACDF;--chipC:#F6B40E;--chipTxt:#0B1B33;
+ --panel:#0F2240;--panelB:#23406B;--itemB:#1D3860;--itemP:#E3C36E;--hora:#8FA9CB;--vacio:#5E7899;
+ --tagMb:#1D3F6E;--tagMf:#BFDDFA;--tagCb:#4A3A10;--tagCf:#FFDD80;--tagAb:#45211F;--tagAf:#FFB4AB;
+ --ausB:#2A1622;--ausBd:#5A2A36;--ausT:#FFB4AB;--ausI:#4A2230;--ausH:#C09AA2;--pie:#0F2240;--pieTxt:#A9C4E4;--pieDot:#74ACDF}
+body.t-sol{--bg:#FBF6EA;--txt:#2B2014;--mut:#8A7A60;--top:#FBF6EA;--topB:#EADFC6;--topTxt:#2B2014;--topSub:#8A7A60;--div:#EADFC6;
+ --card:#fff;--cardB:#EADFC6;--flash:#FCE7B0;--pre:#B07A00;--chipM:#74ACDF;--chipC:#F6B40E;--chipTxt:#2B2014;
+ --panel:#fff;--panelB:#EADFC6;--itemB:#F1E8D5;--itemP:#B07A00;--hora:#A09070;--vacio:#C7B99C;
+ --tagMb:#E4EFFA;--tagMf:#1F5FA8;--tagCb:#FCEFC8;--tagCf:#7A5200;--tagAb:#FBEFEA;--tagAf:#9A3A2A;
+ --ausB:#FBEFEA;--ausBd:#EBCFC5;--ausT:#9A3A2A;--ausI:#F2DDD5;--ausH:#A98A7E;--pie:#F3EAD5;--pieTxt:#8A7A60;--pieDot:#D9C9A5}
+body.t-claro{--bg:#F5F6F8;--txt:#111827;--mut:#6B7280;--top:#fff;--topB:#E3E6EB;--topTxt:#111827;--topSub:#6B7280;--div:#E3E6EB;
+ --card:#fff;--cardB:#E3E6EB;--flash:#DCE8FB;--pre:#2F6FDB;--chipM:#9CC3FF;--chipC:#FCD34D;--chipTxt:#111827;
+ --panel:#fff;--panelB:#E3E6EB;--itemB:#EEF0F3;--itemP:#2F6FDB;--hora:#8A93A0;--vacio:#B6BDC7;
+ --tagMb:#E3EDFD;--tagMf:#1E54B0;--tagCb:#FEF3C7;--tagCf:#8A5A00;--tagAb:#FBE6E4;--tagAf:#A2332A;
+ --ausB:#FFF5F4;--ausBd:#F3CFCB;--ausT:#A2332A;--ausI:#F7E0DD;--ausH:#A57A74;--pie:#fff;--pieTxt:#6B7280;--pieDot:#D1D5DB}
+body.t-contraste{--bg:#000;--txt:#fff;--mut:#E5E7EB;--top:#000;--topB:#fff;--topTxt:#fff;--topSub:#E5E7EB;--div:#fff;
+ --card:#000;--cardB:#FFE600;--flash:#3A3400;--pre:#FFE600;--chipM:#FFE600;--chipC:#fff;--chipTxt:#000;
+ --panel:#000;--panelB:#fff;--itemB:#555;--itemP:#FFE600;--hora:#E5E7EB;--vacio:#9CA3AF;
+ --tagMb:#FFE600;--tagMf:#000;--tagCb:#fff;--tagCf:#000;--tagAb:#FF5A4E;--tagAf:#000;
+ --ausB:#000;--ausBd:#FF5A4E;--ausT:#FF5A4E;--ausI:#555;--ausH:#E5E7EB;--pie:#000;--pieTxt:#fff;--pieDot:#FFE600}
+body.t-verde{--bg:#F1F7F4;--txt:#12352D;--mut:#5E7F76;--top:#1D6B5A;--topB:#1D6B5A;--topTxt:#fff;--topSub:#CFE8E1;--div:rgba(255,255,255,.4);
+ --card:#fff;--cardB:#CFE3DB;--flash:#D3F0E6;--pre:#1D6B5A;--chipM:#7FD1B9;--chipC:#F6C667;--chipTxt:#12352D;
+ --panel:#fff;--panelB:#CFE3DB;--itemB:#E4F0EB;--itemP:#1D6B5A;--hora:#7C9A92;--vacio:#A9C4BC;
+ --tagMb:#DDF1EA;--tagMf:#1D6B5A;--tagCb:#FDF0CF;--tagCf:#8A5A00;--tagAb:#FBE6E4;--tagAf:#A2332A;
+ --ausB:#FDF4F2;--ausBd:#F0D0CB;--ausT:#A2332A;--ausI:#F5E0DC;--ausH:#A57A74;--pie:#1D6B5A;--pieTxt:#CFE8E1;--pieDot:#7FD1B9}
+body.t-contraste .actual{border-width:3px}
+body.t-contraste .nom{font-size:10vh}
+
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#0A1120;color:#fff;font-family:"Plus Jakarta Sans",Arial,sans-serif;overflow:hidden;cursor:none}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Plus Jakarta Sans",Arial,sans-serif;overflow:hidden;cursor:none}
 .wrap{height:100vh;display:-webkit-box;display:flex;-webkit-box-orient:vertical;flex-direction:column}
-.top{height:11.9vh;padding:0 3.3vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1C2740;flex-shrink:0}
+.franja{height:1vh;display:none;flex-shrink:0;background:linear-gradient(#74ACDF 0,#74ACDF 33.3%,#fff 33.3%,#fff 66.6%,#74ACDF 66.6%)}
+body.t-albiceleste .franja{display:block}
+.top{height:11.9vh;padding:0 3.3vw;display:flex;align-items:center;justify-content:space-between;background:var(--top);color:var(--topTxt);border-bottom:1px solid var(--topB);flex-shrink:0}
 .marca{display:flex;align-items:center}
-.marca img{width:6.7vh;height:6.7vh;border-radius:50%;display:block;box-shadow:0 0 0 .4vh rgba(255,255,255,.08);margin-right:1.7vh;object-fit:cover}
+.marca img{width:6.7vh;height:6.7vh;border-radius:50%;display:block;box-shadow:0 0 0 .4vh rgba(255,255,255,.12);margin-right:1.7vh;object-fit:cover}
 .org{font-family:"Montserrat",Arial,sans-serif;font-weight:700;font-size:5.2vh;letter-spacing:-.01em;line-height:1}
-.div{width:2px;height:5.9vh;background:#2A3752;margin:0 2.2vh}
+.div{width:2px;height:5.9vh;background:var(--div);margin:0 2.2vh}
 .ofi{font-size:3.3vh;font-weight:800;letter-spacing:-.01em}
-.sub{font-size:2vh;color:#93A3BF;font-weight:500;margin-top:.2vh}
+.sub{font-size:2vh;color:var(--topSub);font-weight:500;margin-top:.2vh}
 .reloj{text-align:right}
 .reloj b{font-family:"Space Grotesk",Arial,sans-serif;font-size:5.6vh;font-weight:600;line-height:1;display:block}
-.reloj span{font-size:2vh;color:#93A3BF;display:block;margin-top:.6vh}
+.reloj span{font-size:2vh;color:var(--topSub);display:block;margin-top:.6vh}
 .cuerpo{-webkit-box-flex:1;flex:1;display:flex;padding:3.7vh 3.3vw;min-height:0}
-.actual{-webkit-box-flex:1.35;flex:1.35 1 0;min-width:0;margin-right:2.1vw;background:#111B2E;border:1px solid #1F2C47;border-radius:3.3vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4vh 3vw;text-align:center;overflow:hidden}
+.actual{position:relative;-webkit-box-flex:1.35;flex:1.35 1 0;min-width:0;margin-right:2.1vw;background:var(--card);border:1px solid var(--cardB);border-radius:3.3vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4vh 3vw;text-align:center;overflow:hidden}
+#actualIn{position:relative;display:flex;flex-direction:column;align-items:center;max-width:100%}
+.solfondo{position:absolute;left:50%;top:50%;width:62vh;height:62vh;margin:-31vh 0 0 -31vh;display:none;pointer-events:none}
+body.t-celeste .solfondo{display:block;opacity:.13}
+body.t-sol .solfondo{display:block;opacity:.22}
 .actual.flash{-webkit-animation:fl .9s ease-in-out 4;animation:fl .9s ease-in-out 4}
-@-webkit-keyframes fl{0%,100%{background:#111B2E}50%{background:#24508f}}
-@keyframes fl{0%,100%{background:#111B2E}50%{background:#24508f}}
-.etq{display:flex;align-items:center;font-size:2.2vh;font-weight:700;letter-spacing:.28em;color:#93A3BF}
+@-webkit-keyframes fl{0%,100%{background:var(--card)}50%{background:var(--flash)}}
+@keyframes fl{0%,100%{background:var(--card)}50%{background:var(--flash)}}
+.etq{display:flex;align-items:center;font-size:2.2vh;font-weight:700;letter-spacing:.28em;color:var(--mut)}
 .pulso{width:1.7vh;height:1.7vh;border-radius:50%;background:#45D483;margin-right:1.3vh;-webkit-animation:pu 1.4s ease-in-out infinite;animation:pu 1.4s ease-in-out infinite}
 @-webkit-keyframes pu{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(69,212,131,.55)}50%{opacity:.35;box-shadow:0 0 0 1.3vh rgba(69,212,131,0)}}
 @keyframes pu{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(69,212,131,.55)}50%{opacity:.35;box-shadow:0 0 0 1.3vh rgba(69,212,131,0)}}
 .nom{margin-top:3vh;font-size:9.3vh;font-weight:800;line-height:1.06;letter-spacing:-.015em;max-width:100%;word-wrap:break-word}
-.lpre{margin-top:3.3vh;font-size:2.2vh;color:#93A3BF;font-weight:600;letter-spacing:.12em}
-.pre{font-family:"Space Grotesk",Arial,sans-serif;font-size:9.6vh;font-weight:700;line-height:1.05;color:#FFC857;letter-spacing:.02em;white-space:nowrap}
+.lpre{margin-top:3.3vh;font-size:2.2vh;color:var(--mut);font-weight:600;letter-spacing:.12em}
+.pre{font-family:"Space Grotesk",Arial,sans-serif;font-size:9.6vh;font-weight:700;line-height:1.05;color:var(--pre);letter-spacing:.02em;white-space:nowrap}
 .dir{margin-top:4vh;display:flex;align-items:center}
-.dir .lbl{font-size:2.8vh;color:#93A3BF;font-weight:600;margin-right:1.7vh}
-.chip{font-size:3.7vh;font-weight:800;padding:1.3vh 3.7vh;border-radius:99vh;letter-spacing:.02em;color:#0A1120}
-.chip.mesa{background:#7AB8FF}.chip.caja{background:#FFC857}
-.espera{font-size:5vh;color:#93A3BF;font-weight:600}
+.dir .lbl{font-size:2.8vh;color:var(--mut);font-weight:600;margin-right:1.7vh}
+.chip{font-size:3.7vh;font-weight:800;padding:1.3vh 3.7vh;border-radius:99vh;letter-spacing:.02em;color:var(--chipTxt)}
+.chip.mesa{background:var(--chipM)}.chip.caja{background:var(--chipC)}
+.espera{font-size:5vh;color:var(--mut);font-weight:600}
 .col{-webkit-box-flex:1;flex:1 1 0;min-width:0;display:flex;flex-direction:column;min-height:0}
-.panel{background:#0E1729;border:1px solid #1C2740;border-radius:3vh;padding:2.8vh 2.1vw 1.4vh;overflow:hidden}
-.panel h3{font-size:2vh;font-weight:700;letter-spacing:.24em;color:#93A3BF;margin-bottom:.7vh}
-.item{display:flex;align-items:center;padding:.95vh 0;border-top:1px solid #1C2740}
+.panel{background:var(--panel);border:1px solid var(--panelB);border-radius:3vh;padding:2.8vh 2.1vw 1.4vh;overflow:hidden}
+.panel h3{font-size:2vh;font-weight:700;letter-spacing:.24em;color:var(--mut);margin-bottom:.7vh}
+.item{display:flex;align-items:center;padding:.95vh 0;border-top:1px solid var(--itemB)}
 .item .txt{-webkit-box-flex:1;flex:1;min-width:0;margin-right:1.2vw}
 .item .n{font-size:2.8vh;font-weight:800;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item .p{font-family:"Space Grotesk",Arial,sans-serif;font-size:1.95vh;font-weight:600;color:#C9A95A;margin-top:.5vh}
+.item .p{font-family:"Space Grotesk",Arial,sans-serif;font-size:1.95vh;font-weight:600;color:var(--itemP);margin-top:.5vh}
 .item .der{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0}
 .tag{font-size:1.85vh;font-weight:700;padding:.55vh 1.5vh;border-radius:99vh;letter-spacing:.04em;white-space:nowrap}
-.tag.mesa{background:#1B3355;color:#A9CDFF}.tag.caja{background:#3D2E12;color:#FFD78A}.tag.ausente{background:#45211F;color:#FFB4AB;font-weight:800}
-.hora{font-size:1.85vh;color:#7F8FAD;margin-top:.7vh}
-.aus{margin-top:2vh;background:#1A1216;border-color:#4A2426}
-.aus h3{color:#FFB4AB}
-.aus .item{border-top-color:#3A1F22;padding:.8vh 0}
+.tag.mesa{background:var(--tagMb);color:var(--tagMf)}.tag.caja{background:var(--tagCb);color:var(--tagCf)}.tag.ausente{background:var(--tagAb);color:var(--tagAf);font-weight:800}
+.hora{font-size:1.85vh;color:var(--hora);margin-top:.7vh}
+.aus{margin-top:2vh;background:var(--ausB);border-color:var(--ausBd)}
+.aus h3{color:var(--ausT)}
+.aus .item{border-top-color:var(--ausI);padding:.8vh 0}
 .aus .n{font-size:2.5vh;font-weight:700}
 .aus .tag{font-size:1.6vh;padding:.4vh 1.1vh;margin-right:1vw}
-.aus .hora{margin-top:0;color:#A88C8A}
-.vacio{color:#56627A;font-size:2.2vh;padding:1vh 0}
-.pie{height:7vh;display:flex;align-items:center;justify-content:center;font-size:2.2vh;color:#93A3BF;background:#0D1628;border-top:1px solid #1C2740;flex-shrink:0}
-.pie i{display:inline-block;width:.6vh;height:.6vh;border-radius:50%;background:#3A4A68;margin:0 2.6vh}
+.aus .hora{margin-top:0;color:var(--ausH)}
+.vacio{color:var(--vacio);font-size:2.2vh;padding:1vh 0}
+.pie{height:7vh;display:flex;align-items:center;justify-content:center;font-size:2.2vh;color:var(--pieTxt);background:var(--pie);border-top:1px solid var(--topB);flex-shrink:0}
+.pie i{display:inline-block;width:.6vh;height:.6vh;border-radius:50%;background:var(--pieDot);margin:0 2.6vh}
 #sonido{position:fixed;left:2vh;bottom:9vh;background:#FFC857;color:#0A1120;font-weight:700;font-size:2vh;padding:1.2vh 2vh;border-radius:1.2vh;display:none;cursor:pointer}
 #offline{position:fixed;right:2vh;bottom:9vh;background:#45211F;color:#FFB4AB;font-size:1.9vh;padding:1vh 1.6vh;border-radius:1vh;display:none}
 </style>
 </head>
-<body>
+<body class="t-noche">
 <div class="wrap">
+  <div class="franja"></div>
   <div class="top">
     <div class="marca">
       <img id="logo" src="/logo.png" alt="">
@@ -72,7 +118,7 @@ html,body{height:100%;background:#0A1120;color:#fff;font-family:"Plus Jakarta Sa
     <div class="reloj"><b id="hora">--:--</b><span id="fecha"></span></div>
   </div>
   <div class="cuerpo">
-    <div class="actual" id="actual"><div class="espera">Aguarde a ser llamado</div></div>
+    <div class="actual" id="actual"><svg class="solfondo" viewBox="0 0 100 100"><path d="M80.0 50.0L98.0 50.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M77.7 61.5L94.3 68.4" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M71.2 71.2L83.9 83.9" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M61.5 77.7L68.4 94.3" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M50.0 80.0L50.0 98.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M38.5 77.7L31.6 94.3" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M28.8 71.2L16.1 83.9" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M22.3 61.5L5.7 68.4" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M20.0 50.0L2.0 50.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M22.3 38.5L5.7 31.6" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M28.8 28.8L16.1 16.1" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M38.5 22.3L31.6 5.7" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M50.0 20.0L50.0 2.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M61.5 22.3L68.4 5.7" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M71.2 28.8L83.9 16.1" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M77.7 38.5L94.3 31.6" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><circle cx="50" cy="50" r="24" fill="#F6B40E"/></svg><div id="actualIn"><div class="espera">Aguarde a ser llamado</div></div></div>
     <div class="col">
       <div class="panel" id="pUlt"><h3>ÚLTIMOS LLAMADOS</h3><div id="ultimos"></div></div>
       <div class="panel aus" id="pAus"><h3>AUSENTES</h3><div id="ausentes"></div></div>
@@ -115,16 +161,18 @@ html,body{height:100%;background:#0A1120;color:#fff;font-family:"Plus Jakarta Sa
     if (lv !== logoVer) { logoVer = lv; $('logo').src = '/logo.png?v=' + new Date().getTime(); }
     for (i = 0; i < (e.turnos || []).length; i++) porId[e.turnos[i].id] = e.turnos[i];
     var ll = e.llamados || [], ultimo = ll.length ? ll[ll.length - 1] : null;
-    var box = $('actual');
+    var box = $('actual'), inner = $('actualIn');
+    var tema = c.temaTV || 'noche';
+    if (document.body.className !== 't-' + tema) document.body.className = 't-' + tema;
     if (ultimo && porId[ultimo.turnoId]) {
       var t = porId[ultimo.turnoId];
-      box.innerHTML = '<div class="etq"><span class="pulso"></span>AHORA LLAMANDO</div>' +
+      inner.innerHTML = '<div class="etq"><span class="pulso"></span>AHORA LLAMANDO</div>' +
         '<div class="nom" id="nomActual">' + T.esc(T.nombre(t.nombre)) + '</div>' +
         (t.precarga ? '<div class="lpre">N.º DE PRECARGA</div><div class="pre">' + T.esc(t.precarga) + '</div>' : '') +
         '<div class="dir"><span class="lbl">Diríjase a</span><span class="chip ' + (ultimo.dest === 'caja' ? 'caja' : 'mesa') + '">' + T.esc(ultimo.destino) + '</span></div>';
       ajustar($('nomActual'));
     } else {
-      box.innerHTML = '<div class="espera">Aguarde a ser llamado</div>';
+      inner.innerHTML = '<div class="espera">Aguarde a ser llamado</div>';
     }
     // últimos llamados: distintas personas, sin la actual
     var vistos = {}, ult = [], max = c.ultimos || 5;

@@ -89,7 +89,10 @@ type Config struct {
 	TV        TVConf             `json:"tv"`
 	Ultimos   int                `json:"ultimos"`
 	Ausentes  int                `json:"ausentes"`
+	TemaTV    string             `json:"temaTV"` // noche, celeste, albiceleste, sol, claro, contraste, verde
 }
+
+var temasTV = map[string]bool{"noche": true, "celeste": true, "albiceleste": true, "sol": true, "claro": true, "contraste": true, "verde": true}
 
 type Store struct {
 	mu     sync.Mutex
@@ -123,6 +126,9 @@ func NewStore(dir string) *Store {
 	}
 	if s.C.Ausentes == 0 {
 		s.C.Ausentes = 3
+	}
+	if !temasTV[s.C.TemaTV] {
+		s.C.TemaTV = "noche"
 	}
 	if s.C.TV.Receptor == "" {
 		s.C.TV.Receptor = "dashcast"
