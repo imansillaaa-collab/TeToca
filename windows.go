@@ -38,7 +38,12 @@ func buscarNavegador() string {
 // abrirVentana abre TeToca como una ventana propia (sin barra de direcciones).
 func abrirVentana(url string) {
 	if nav := buscarNavegador(); nav != "" {
-		cmd := exec.Command(nav, "--app="+url, "--start-maximized", "--disable-features=TranslateUI", "--autoplay-policy=no-user-gesture-required")
+		// Perfil propio de TeToca: así la ventana no lleva la insignia del perfil de Chrome
+		// del usuario y no se mezcla con sus pestañas, cuentas ni extensiones.
+		perfil := filepath.Join(datos, "navegador")
+		cmd := exec.Command(nav, "--app="+url, "--user-data-dir="+perfil, "--no-first-run", "--no-default-browser-check",
+			"--disable-sync", "--disable-extensions", "--start-maximized", "--disable-features=Translate,TranslateUI",
+			"--autoplay-policy=no-user-gesture-required")
 		if err := cmd.Start(); err == nil {
 			return
 		}
