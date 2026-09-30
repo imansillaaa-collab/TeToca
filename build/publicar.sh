@@ -23,7 +23,7 @@ v, notas, sha = sys.argv[1:4]
 json.dump({"version": v, "notas": notas, "sha256": sha, "archivo": "TeToca.exe"},
           open("ultima.json", "w"), ensure_ascii=False, indent=1)
 EOF
-  printf '# TeToca · versión publicada\n\nÚltima versión: **%s**\n\nDescargar: [TeToca.exe](https://github.com/imansillaaa-collab/tetoca/raw/publicado/TeToca.exe)\n\n%s\n' "$VERSION" "$NOTAS" > README.md
+  printf '# TeToca · versión publicada\n\nÚltima versión: **%s**\n\nDescargar: [TeToca.exe](https://github.com/imansillaaa-collab/TeToca/raw/publicado/TeToca.exe)\n\n%s\n' "$VERSION" "$NOTAS" > README.md
   git add TeToca.exe ultima.json README.md
   git commit -q -m "TeToca $VERSION"
   git push -f origin HEAD:publicado

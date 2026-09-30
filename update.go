@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-const Repo = "imansillaaa-collab/tetoca"
+const Repo = "imansillaaa-collab/TeToca"
 
 // Certificados raíz incluidos, para que las descargas anden aunque
 // Windows 7 no tenga sus certificados actualizados.

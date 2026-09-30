@@ -5,7 +5,7 @@ y los empleados llaman desde sus computadoras. Pensado para registros automotore
 (lee el archivo de turnos del día del sistema de la DNRPA), pero sirve para cualquier oficina
 con sala de espera.
 
-**Descargar la última versión:** [TeToca.exe](https://github.com/imansillaaa-collab/tetoca/raw/publicado/TeToca.exe)
+**Descargar la última versión:** [TeToca.exe](https://github.com/imansillaaa-collab/TeToca/raw/publicado/TeToca.exe)
 
 ## Qué hace
 
