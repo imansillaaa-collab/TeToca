@@ -1,0 +1,5 @@
+rsrc_windows_*.syso
+dist/
+datos/
+*.exe
+*.log

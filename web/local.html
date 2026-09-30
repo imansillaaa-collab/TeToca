@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>TeToca</title>
+<link rel="icon" href="/static/icono.png">
+<link rel="stylesheet" href="/static/fuentes.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Plus Jakarta Sans",Segoe UI,Arial,sans-serif;background:#F3F1EC;color:#16181D;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:22px;text-align:center}
+img.logo{width:84px;height:84px}
+h1{margin:0;font-size:30px;letter-spacing:-.01em}
+p{margin:0;color:#5E6470;line-height:1.5;max-width:620px}
+.ops{display:flex;gap:22px;flex-wrap:wrap;justify-content:center}
+.op{width:300px;border:2px solid #E4E1DA;background:#fff;border-radius:22px;padding:26px;display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:center;font:inherit;color:inherit}
+.op:hover{border-color:#2F6FDB}
+.op b{font-size:20px}.op span{color:#5E6470;line-height:1.45;font-size:14px}
+.lista{display:flex;flex-direction:column;gap:10px;width:440px;max-width:100%}
+.c{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #E4E1DA;border-radius:14px;padding:14px 16px;text-align:left}
+.c b{display:block}.c small{color:#5E6470}
+button.azul{background:#2F6FDB;color:#fff;border:0;border-radius:10px;height:40px;padding:0 16px;font:inherit;font-weight:700;cursor:pointer}
+button.gris{background:#fff;border:1px solid #D9D5CC;border-radius:10px;height:40px;padding:0 16px;font:inherit;font-weight:700;cursor:pointer}
+input{height:42px;border:1px solid #D9D5CC;border-radius:10px;padding:0 12px;font:inherit;width:220px}
+.err{color:#A2332A;font-weight:600}
+.spin{width:34px;height:34px;border-radius:50%;border:4px solid #E4E1DA;border-top-color:#2F6FDB;animation:g 1s linear infinite}
+@keyframes g{to{transform:rotate(360deg)}}
+.small{font-size:13px;color:#8A8F99}
+</style>
+</head>
+<body>
+<img class="logo" src="/static/icono.png" alt="">
+<div id="c"></div>
+<script>
+(function () {
+  var c = document.getElementById('c'), L = null;
+  function post(u, b) { return fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) }).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Error'); return j; }); }); }
+  function get(u) { return fetch(u).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Error'); return j; }); }); }
+  function esc(s) { return String(s || '').replace(/[&<>"]/g, function (x) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[x]; }); }
+
+  function inicio() {
+    c.innerHTML = '<div style="display:flex;flex-direction:column;gap:22px;align-items:center"><h1>Bienvenido a TeToca</h1>' +
+      '<p>Antes de empezar, contanos qué rol tiene esta computadora. Se hace una sola vez.</p>' +
+      '<div class="ops"><button class="op" id="oC"><b>Es la PC central</b><span>La que queda prendida todo el día, guarda la lista de turnos y transmite al televisor. Hay una sola.</span></button>' +
+      '<button class="op" id="oP"><b>Es un puesto</b><span>Una PC de mesa de entradas o de caja que se conecta a la central.</span></button></div>' +
+      '<p class="small">Nombre de esta PC: ' + esc(L.local.pc) + '</p></div>';
+    document.getElementById('oC').onclick = function () {
+      c.innerHTML = '<div class="spin"></div><p>Preparando la PC central…</p>';
+      post('/local/elegir', { modo: 'central' }).then(esperarCentral).catch(function (e) { c.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+    };
+    document.getElementById('oP').onclick = buscar;
+  }
+
+  function esperarCentral() {
+    var n = 0;
+    (function prueba() {
+      fetch('http://127.0.0.1:8765/api/info', { mode: 'no-cors' }).then(function () {
+        location.href = 'http://127.0.0.1:8765/?pc=' + encodeURIComponent(L.local.pc);
+      }).catch(function () {
+        if (++n > 40) { c.innerHTML = '<p class="err">La PC central no arrancó. Cerrá TeToca y volvé a abrirlo.</p>'; return; }
+        setTimeout(prueba, 500);
+      });
+    })();
+  }
+
+  function buscar() {
+    c.innerHTML = '<div style="display:flex;flex-direction:column;gap:16px;align-items:center"><div class="spin"></div><h1>Buscando la PC central…</h1><p>Tiene que estar prendida y con TeToca abierto.</p></div>';
+    get('/local/buscar').then(function (cs) {
+      var h = '<div style="display:flex;flex-direction:column;gap:18px;align-items:center"><h1>' + (cs.length ? 'Elegí la PC central' : 'No encontré la PC central') + '</h1><div class="lista">';
+      for (var i = 0; i < cs.length; i++) h += '<div class="c"><div style="flex:1"><b>' + esc(cs[i].host) + '</b><small>' + esc(cs[i].ip) + ' · versión ' + esc(cs[i].version) + '</small></div><button class="azul" data-i="' + i + '">Conectar</button></div>';
+      h += '</div>';
+      if (!cs.length) h += '<p>Revisá que la PC central esté prendida, con TeToca abierto y en la misma red. También podés escribir su dirección.</p>';
+      h += '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center"><input id="ip" placeholder="Dirección, ej: 192.168.0.10"><button class="gris" id="bIp">Conectar a esa dirección</button><button class="gris" id="bOtra">Buscar de nuevo</button></div>' +
+        '<p class="err" id="e"></p><button class="gris" id="bVolver">Volver</button></div>';
+      c.innerHTML = h;
+      var bs = document.querySelectorAll('[data-i]');
+      for (var k = 0; k < bs.length; k++) bs[k].onclick = function () { var x = cs[+this.getAttribute('data-i')]; elegir(x.ip, x.host); };
+      document.getElementById('bIp').onclick = function () { elegir(document.getElementById('ip').value.trim(), ''); };
+      document.getElementById('bOtra').onclick = buscar;
+      document.getElementById('bVolver').onclick = inicio;
+    });
+  }
+
+  function elegir(ip, host) {
+    if (!ip) return;
+    post('/local/elegir', { modo: 'puesto', ip: ip, host: host }).then(conectar).catch(function (e) { var el = document.getElementById('e'); if (el) el.textContent = e.message; });
+  }
+
+  function conectar() {
+    c.innerHTML = '<div style="display:flex;flex-direction:column;gap:16px;align-items:center"><div class="spin"></div><h1>Conectando con la PC central…</h1><p id="m"></p></div>';
+    var intentos = 0;
+    (function intento() {
+      get('/local/conectar').then(function (r) { location.href = r.url; }).catch(function () {
+        intentos++;
+        var m = document.getElementById('m');
+        if (m) m.innerHTML = 'Todavía no la encuentro. Revisá que la PC central esté prendida y con TeToca abierto.<br><span class="small">Reintentando… (' + intentos + ')</span>' +
+          (intentos > 3 ? '<br><br><button class="gris" id="bCambiar">Elegir otra PC central</button>' : '');
+        var bc = document.getElementById('bCambiar');
+        if (bc) bc.onclick = buscar;
+        setTimeout(intento, 3000);
+      });
+    })();
+  }
+
+  get('/local/estado').then(function (l) {
+    L = l;
+    if (l.local.modo === 'puesto') conectar(); else inicio();
+  });
+})();
+</script>
+</body>
+</html>

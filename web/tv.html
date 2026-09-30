@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeToca · Sala de espera</title>
+<link rel="icon" href="/static/icono.png">
+<link rel="stylesheet" href="/static/fuentes.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0A1120;color:#fff;font-family:"Plus Jakarta Sans",Arial,sans-serif;overflow:hidden;cursor:none}
+.wrap{height:100vh;display:-webkit-box;display:flex;-webkit-box-orient:vertical;flex-direction:column}
+.top{height:11.9vh;padding:0 3.3vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1C2740;flex-shrink:0}
+.marca{display:flex;align-items:center}
+.marca img{width:6.7vh;height:6.7vh;border-radius:50%;display:block;box-shadow:0 0 0 .4vh rgba(255,255,255,.08);margin-right:1.7vh;object-fit:cover}
+.org{font-family:"Montserrat",Arial,sans-serif;font-weight:700;font-size:5.2vh;letter-spacing:-.01em;line-height:1}
+.div{width:2px;height:5.9vh;background:#2A3752;margin:0 2.2vh}
+.ofi{font-size:3.3vh;font-weight:800;letter-spacing:-.01em}
+.sub{font-size:2vh;color:#93A3BF;font-weight:500;margin-top:.2vh}
+.reloj{text-align:right}
+.reloj b{font-family:"Space Grotesk",Arial,sans-serif;font-size:5.6vh;font-weight:600;line-height:1;display:block}
+.reloj span{font-size:2vh;color:#93A3BF;display:block;margin-top:.6vh}
+.cuerpo{-webkit-box-flex:1;flex:1;display:flex;padding:3.7vh 3.3vw;min-height:0}
+.actual{-webkit-box-flex:1.35;flex:1.35 1 0;min-width:0;margin-right:2.1vw;background:#111B2E;border:1px solid #1F2C47;border-radius:3.3vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4vh 3vw;text-align:center;overflow:hidden}
+.actual.flash{-webkit-animation:fl .9s ease-in-out 4;animation:fl .9s ease-in-out 4}
+@-webkit-keyframes fl{0%,100%{background:#111B2E}50%{background:#24508f}}
+@keyframes fl{0%,100%{background:#111B2E}50%{background:#24508f}}
+.etq{display:flex;align-items:center;font-size:2.2vh;font-weight:700;letter-spacing:.28em;color:#93A3BF}
+.pulso{width:1.7vh;height:1.7vh;border-radius:50%;background:#45D483;margin-right:1.3vh;-webkit-animation:pu 1.4s ease-in-out infinite;animation:pu 1.4s ease-in-out infinite}
+@-webkit-keyframes pu{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(69,212,131,.55)}50%{opacity:.35;box-shadow:0 0 0 1.3vh rgba(69,212,131,0)}}
+@keyframes pu{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(69,212,131,.55)}50%{opacity:.35;box-shadow:0 0 0 1.3vh rgba(69,212,131,0)}}
+.nom{margin-top:3vh;font-size:9.3vh;font-weight:800;line-height:1.06;letter-spacing:-.015em;max-width:100%;word-wrap:break-word}
+.lpre{margin-top:3.3vh;font-size:2.2vh;color:#93A3BF;font-weight:600;letter-spacing:.12em}
+.pre{font-family:"Space Grotesk",Arial,sans-serif;font-size:9.6vh;font-weight:700;line-height:1.05;color:#FFC857;letter-spacing:.02em;white-space:nowrap}
+.dir{margin-top:4vh;display:flex;align-items:center}
+.dir .lbl{font-size:2.8vh;color:#93A3BF;font-weight:600;margin-right:1.7vh}
+.chip{font-size:3.7vh;font-weight:800;padding:1.3vh 3.7vh;border-radius:99vh;letter-spacing:.02em;color:#0A1120}
+.chip.mesa{background:#7AB8FF}.chip.caja{background:#FFC857}
+.espera{font-size:5vh;color:#93A3BF;font-weight:600}
+.col{-webkit-box-flex:1;flex:1 1 0;min-width:0;display:flex;flex-direction:column;min-height:0}
+.panel{background:#0E1729;border:1px solid #1C2740;border-radius:3vh;padding:2.8vh 2.1vw 1.4vh;overflow:hidden}
+.panel h3{font-size:2vh;font-weight:700;letter-spacing:.24em;color:#93A3BF;margin-bottom:.7vh}
+.item{display:flex;align-items:center;padding:.95vh 0;border-top:1px solid #1C2740}
+.item .txt{-webkit-box-flex:1;flex:1;min-width:0;margin-right:1.2vw}
+.item .n{font-size:2.8vh;font-weight:800;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .p{font-family:"Space Grotesk",Arial,sans-serif;font-size:1.95vh;font-weight:600;color:#C9A95A;margin-top:.5vh}
+.item .der{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0}
+.tag{font-size:1.85vh;font-weight:700;padding:.55vh 1.5vh;border-radius:99vh;letter-spacing:.04em;white-space:nowrap}
+.tag.mesa{background:#1B3355;color:#A9CDFF}.tag.caja{background:#3D2E12;color:#FFD78A}.tag.ausente{background:#45211F;color:#FFB4AB;font-weight:800}
+.hora{font-size:1.85vh;color:#7F8FAD;margin-top:.7vh}
+.aus{margin-top:2vh;background:#1A1216;border-color:#4A2426}
+.aus h3{color:#FFB4AB}
+.aus .item{border-top-color:#3A1F22;padding:.8vh 0}
+.aus .n{font-size:2.5vh;font-weight:700}
+.aus .tag{font-size:1.6vh;padding:.4vh 1.1vh;margin-right:1vw}
+.aus .hora{margin-top:0;color:#A88C8A}
+.vacio{color:#56627A;font-size:2.2vh;padding:1vh 0}
+.pie{height:7vh;display:flex;align-items:center;justify-content:center;font-size:2.2vh;color:#93A3BF;background:#0D1628;border-top:1px solid #1C2740;flex-shrink:0}
+.pie i{display:inline-block;width:.6vh;height:.6vh;border-radius:50%;background:#3A4A68;margin:0 2.6vh}
+#sonido{position:fixed;left:2vh;bottom:9vh;background:#FFC857;color:#0A1120;font-weight:700;font-size:2vh;padding:1.2vh 2vh;border-radius:1.2vh;display:none;cursor:pointer}
+#offline{position:fixed;right:2vh;bottom:9vh;background:#45211F;color:#FFB4AB;font-size:1.9vh;padding:1vh 1.6vh;border-radius:1vh;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="marca">
+      <img id="logo" src="/logo.png" alt="">
+      <span class="org" id="org"></span><span class="div" id="orgDiv"></span>
+      <div><div class="ofi" id="ofi">Registro Automotor</div><div class="sub">Sala de espera</div></div>
+    </div>
+    <div class="reloj"><b id="hora">--:--</b><span id="fecha"></span></div>
+  </div>
+  <div class="cuerpo">
+    <div class="actual" id="actual"><div class="espera">Aguarde a ser llamado</div></div>
+    <div class="col">
+      <div class="panel" id="pUlt"><h3>ÚLTIMOS LLAMADOS</h3><div id="ultimos"></div></div>
+      <div class="panel aus" id="pAus"><h3>AUSENTES</h3><div id="ausentes"></div></div>
+    </div>
+  </div>
+  <div class="pie"><span>Tenga a mano su número de precarga</span><i></i><span>Si no escuchó su nombre, revise la lista de últimos llamados</span></div>
+</div>
+<div id="sonido">Tocá la pantalla para activar el sonido</div>
+<div id="offline">Reconectando con la PC central…</div>
+<script src="/static/comun.js"></script>
+<script>
+(function () {
+  var T = window.TT, ultimoSeq = null, sonido = 'dingdong', logoVer = '';
+  var DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  function $(id) { return document.getElementById(id); }
+  function reloj() {
+    var d = new Date();
+    $('hora').textContent = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    var f = DIAS[d.getDay()] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()];
+    $('fecha').textContent = f.charAt(0).toUpperCase() + f.slice(1);
+  }
+  reloj(); setInterval(reloj, 5000);
+
+  function ajustar(el) {
+    var caja = $('actual'), fs = 9.3, vh = window.innerHeight / 100;
+    el.style.fontSize = fs + 'vh';
+    while (fs > 4 && (el.offsetHeight > vh * 23 || caja.scrollHeight > caja.clientHeight + 2)) {
+      fs -= 0.4; el.style.fontSize = fs + 'vh';
+    }
+  }
+
+  function render(v) {
+    var e = v.estado, c = v.config, porId = {}, i;
+    sonido = c.sonido || 'dingdong';
+    $('org').textContent = c.organismo || '';
+    $('org').style.display = $('orgDiv').style.display = c.organismo ? '' : 'none';
+    $('ofi').textContent = c.oficina || 'Sala de espera';
+    var lv = c.tieneLogo ? 'si' : 'no';
+    if (lv !== logoVer) { logoVer = lv; $('logo').src = '/logo.png?v=' + new Date().getTime(); }
+    for (i = 0; i < (e.turnos || []).length; i++) porId[e.turnos[i].id] = e.turnos[i];
+    var ll = e.llamados || [], ultimo = ll.length ? ll[ll.length - 1] : null;
+    var box = $('actual');
+    if (ultimo && porId[ultimo.turnoId]) {
+      var t = porId[ultimo.turnoId];
+      box.innerHTML = '<div class="etq"><span class="pulso"></span>AHORA LLAMANDO</div>' +
+        '<div class="nom" id="nomActual">' + T.esc(T.nombre(t.nombre)) + '</div>' +
+        (t.precarga ? '<div class="lpre">N.º DE PRECARGA</div><div class="pre">' + T.esc(t.precarga) + '</div>' : '') +
+        '<div class="dir"><span class="lbl">Diríjase a</span><span class="chip ' + (ultimo.dest === 'caja' ? 'caja' : 'mesa') + '">' + T.esc(ultimo.destino) + '</span></div>';
+      ajustar($('nomActual'));
+    } else {
+      box.innerHTML = '<div class="espera">Aguarde a ser llamado</div>';
+    }
+    // últimos llamados: distintas personas, sin la actual
+    var vistos = {}, ult = [], max = c.ultimos || 5;
+    if (ultimo) vistos[ultimo.turnoId] = true;
+    for (i = ll.length - 1; i >= 0 && ult.length < max; i--) {
+      if (vistos[ll[i].turnoId] || !porId[ll[i].turnoId]) continue;
+      vistos[ll[i].turnoId] = true; ult.push(ll[i]);
+    }
+    var h = '';
+    for (i = 0; i < ult.length; i++) {
+      var tu = porId[ult[i].turnoId], aus = tu.estado === 'ausente';
+      h += '<div class="item"><div class="txt"><div class="n">' + T.esc(T.nombre(tu.nombre)) + '</div><div class="p">' + T.esc(tu.precarga) + '</div></div>' +
+        '<div class="der"><span class="tag ' + (aus ? 'ausente' : ult[i].dest) + '">' + (aus ? 'AUSENTE' : T.esc(ult[i].etiqueta)) + '</span><span class="hora">' + T.hhmm(ult[i].hora) + '</span></div></div>';
+    }
+    $('ultimos').innerHTML = h || '<div class="vacio">—</div>';
+    // ausentes
+    var ausentes = [], maxA = c.ausentes == null ? 3 : c.ausentes;
+    for (i = 0; i < (e.turnos || []).length; i++) if (e.turnos[i].estado === 'ausente') ausentes.push(e.turnos[i]);
+    ausentes.sort(function (a, b) { return new Date(b.ausenteA) - new Date(a.ausenteA); });
+    ausentes = ausentes.slice(0, maxA);
+    $('pAus').style.display = maxA > 0 ? '' : 'none';
+    h = '';
+    for (i = 0; i < ausentes.length; i++) {
+      var a = ausentes[i];
+      h += '<div class="item"><div class="txt"><div class="n">' + T.esc(T.nombre(a.nombre)) + '</div></div><span class="tag ' + (a.ausenteEn === 'caja' ? 'caja' : 'mesa') + '">' + (a.ausenteEn === 'caja' ? 'CAJA' : 'MESA') + '</span><span class="hora">' + T.hhmm(a.ausenteA) + '</span></div>';
+    }
+    $('ausentes').innerHTML = h || '<div class="vacio">—</div>';
+
+    // llamado nuevo: titilar y sonar
+    if (ultimoSeq !== null && e.seq > ultimoSeq && ultimo && ultimo.seq > ultimoSeq) {
+      box.className = 'actual'; void box.offsetWidth; box.className = 'actual flash';
+      T.tocar(sonido);
+      setTimeout(function () { if (!T.audioActivo()) $('sonido').style.display = 'block'; }, 400);
+    }
+    ultimoSeq = e.seq;
+    if (v.version && window.__ver && v.version !== window.__ver) location.reload();
+    window.__ver = v.version;
+  }
+
+  document.addEventListener('click', function () { T.audio(); $('sonido').style.display = 'none'; });
+  T.conectar('/api/eventos', render, function (ok, fallas) {
+    $('offline').style.display = (!ok && fallas > 2) ? 'block' : 'none';
+  });
+  T.audio();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeToca</title>
+<link rel="icon" href="/static/icono.png">
+<link rel="stylesheet" href="/static/fuentes.css">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="barra" id="barra"></div>
+<div id="avisos"></div>
+<div id="vista" style="flex:1;min-height:0;display:flex;flex-direction:column"></div>
+<div id="pop"></div>
+<div id="modal"></div>
+<div id="toast"></div>
+<div id="desconectado">Se perdió la conexión con la PC central.<br>Reintentando…</div>
+<input type="file" id="archivo" accept=".xls,.csv,.txt,.html,.htm" class="hidden">
+<input type="file" id="archivoLogo" accept="image/png,image/jpeg" class="hidden">
+<script src="/static/comun.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
