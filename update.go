@@ -45,15 +45,34 @@ var (
 	urlHash string
 )
 
-func clienteHTTP() *http.Client {
+// clientes: primero con los certificados de Windows (sirve si hay un antivirus o proxy
+// que revisa las conexiones) y, si falla, con los certificados incluidos en el programa
+// (sirve en Windows 7 sin actualizaciones).
+func clientesHTTP(timeout time.Duration) []*http.Client {
+	sistema := &http.Client{Timeout: timeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment,
+		TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12}}}
 	pool := x509.NewCertPool()
 	if !pool.AppendCertsFromPEM(raicesPEM) {
-		pool = nil
+		return []*http.Client{sistema}
 	}
-	return &http.Client{Timeout: 5 * time.Minute, Transport: &http.Transport{
-		Proxy:           http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{RootCAs: pool, MinVersion: tls.VersionTLS12},
-	}}
+	incluidos := &http.Client{Timeout: timeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment,
+		TLSClientConfig: &tls.Config{RootCAs: pool, MinVersion: tls.VersionTLS12}}}
+	return []*http.Client{sistema, incluidos}
+}
+
+func pedir(url string, timeout time.Duration) (*http.Response, error) {
+	var ultimoErr error
+	for _, c := range clientesHTTP(timeout) {
+		req, _ := http.NewRequest("GET", url, nil)
+		req.Header.Set("User-Agent", "TeToca/"+Version)
+		req.Header.Set("Cache-Control", "no-cache")
+		resp, err := c.Do(req)
+		if err == nil {
+			return resp, nil
+		}
+		ultimoErr = err
+	}
+	return nil, ultimoErr
 }
 
 func updInfo() UpdInfo {
@@ -106,12 +125,7 @@ var basePublicado = "https://raw.githubusercontent.com/" + Repo + "/publicado/"
 func urlPublicado(archivo string) string { return basePublicado + archivo }
 
 func buscarActualizacion() {
-	req, _ := http.NewRequest("GET", urlPublicado("ultima.json")+"?t="+strconv.FormatInt(time.Now().Unix(), 10), nil)
-	req.Header.Set("User-Agent", "TeToca/"+Version)
-	req.Header.Set("Cache-Control", "no-cache")
-	c := clienteHTTP()
-	c.Timeout = 20 * time.Second
-	resp, err := c.Do(req)
+	resp, err := pedir(urlPublicado("ultima.json")+"?t="+strconv.FormatInt(time.Now().Unix(), 10), 20*time.Second)
 	if err != nil {
 		logf("buscar actualización: %v", err)
 		return
@@ -144,9 +158,7 @@ func buscarActualizacion() {
 }
 
 func descargar(url string, max int64) ([]byte, error) {
-	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Set("User-Agent", "TeToca/"+Version)
-	resp, err := clienteHTTP().Do(req)
+	resp, err := pedir(url, 5*time.Minute)
 	if err != nil {
 		return nil, err
 	}
