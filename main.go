@@ -108,6 +108,10 @@ func liberarPuerto() {
 
 func main() {
 	reinicio := len(os.Args) > 1 && os.Args[1] == "--reinicio"
+	abrir := len(os.Args) > 1 && os.Args[1] == "--abrir"
+	if abrir {
+		reinicio = true
+	}
 	prepararCarpetas()
 	leerJSON(rutaLocal(), &local)
 	if local.PC == "" {
@@ -119,7 +123,7 @@ func main() {
 	}
 	logf("TeToca %s iniciando (modo=%q, pc=%s)", Version, local.Modo, local.PC)
 	if local.Modo == "central" {
-		modoCentral(reinicio)
+		modoCentral(reinicio, abrir)
 	} else {
 		modoPuesto(reinicio)
 	}
@@ -128,7 +132,7 @@ func main() {
 // ---------------------------------------------------------------------------
 // PC central: guarda la lista, sirve a las demás PC y transmite al TV.
 
-func modoCentral(reinicio bool) {
+func modoCentral(reinicio, abrir bool) {
 	l, err := escuchar(fmt.Sprintf(":%d", Puerto), reinicio)
 	if err != nil {
 		// Probablemente ya está abierto: solo mostramos la ventana.
@@ -146,7 +150,7 @@ func modoCentral(reinicio bool) {
 	go caster.Loop()
 	go chequeoPeriodico()
 	url := fmt.Sprintf("http://127.0.0.1:%d/?pc=%s", Puerto, urlq(local.PC))
-	if !reinicio {
+	if !reinicio || abrir {
 		go func() { time.Sleep(300 * time.Millisecond); abrirVentana(url) }()
 	}
 	bandeja("TeToca · PC central", []itemBandeja{
@@ -291,5 +295,5 @@ func rutasLocal(mux *http.ServeMux) {
 func reiniciarComoCentral() error {
 	time.Sleep(500 * time.Millisecond)
 	liberarPuerto()
-	return reiniciar(rutaExe())
+	return reiniciarCon(rutaExe(), "--abrir")
 }

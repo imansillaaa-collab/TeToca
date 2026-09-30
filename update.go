@@ -261,10 +261,12 @@ func volverAnterior() error {
 	return nil
 }
 
-func reiniciar(exe string) error {
+func reiniciar(exe string) error { return reiniciarCon(exe, "--reinicio") }
+
+func reiniciarCon(exe, flag string) error {
 	time.Sleep(800 * time.Millisecond)
 	liberarPuerto()
-	cmd := exec.Command(exe, "--reinicio")
+	cmd := exec.Command(exe, flag)
 	cmd.Dir = filepath.Dir(exe)
 	if err := cmd.Start(); err != nil {
 		return err

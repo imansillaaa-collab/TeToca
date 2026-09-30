@@ -54,9 +54,10 @@ input{height:42px;border:1px solid #D9D5CC;border-radius:10px;padding:0 12px;fon
     var n = 0;
     (function prueba() {
       fetch('http://127.0.0.1:8765/api/info', { mode: 'no-cors' }).then(function () {
-        location.href = 'http://127.0.0.1:8765/?pc=' + encodeURIComponent(L.local.pc);
+        c.innerHTML = '<h1>¡Listo!</h1><p>Esta PC ya es la central. TeToca se abre en otra ventana: esta la podés cerrar.</p>';
+        setTimeout(function () { window.close(); }, 2500);
       }).catch(function () {
-        if (++n > 40) { c.innerHTML = '<p class="err">La PC central no arrancó. Cerrá TeToca y volvé a abrirlo.</p>'; return; }
+        if (++n > 60) { c.innerHTML = '<p class="err">La PC central no arrancó. Cerrá TeToca y volvé a abrirlo.</p>'; return; }
         setTimeout(prueba, 500);
       });
     })();
