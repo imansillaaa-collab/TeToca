@@ -1,33 +1,42 @@
 #!/usr/bin/env bash
 # Publica una versión nueva de TeToca en la rama "publicado".
-# Todas las PC centrales que tengan TeToca abierto van a ver el cartel
-# "Hay una actualización disponible" en unas horas (o al tocar "Buscar actualizaciones").
 #
-# Uso: ./build/publicar.sh 1.0.1 "Qué cambió en esta versión"
+# Uso:
+#   ./build/publicar.sh 1.0.13 "Qué cambió"            -> para todos (canal general)
+#   ./build/publicar.sh 1.0.13 "Qué cambió" prueba     -> solo para el canal "prueba"
+#   ./build/publicar.sh 1.0.13 "Qué cambió" tandil     -> solo para el canal "tandil"
+#
+# Cada oficina elige su canal en Configuración → Actualizaciones. Una oficina en un
+# canal recibe la versión de su canal o la general, la que sea más nueva.
+# Para pasarle a todos lo que ya anduvo bien en un canal: ./build/promover.sh prueba
 set -euo pipefail
 cd "$(dirname "$0")/.."
-VERSION="${1:?Falta la versión, ej: 1.0.1}"
+VERSION="${1:?Falta la versión, ej: 1.0.13}"
 NOTAS="${2:-}"
+CANAL="${3:-general}"
+if ! [[ "$CANAL" =~ ^[a-z0-9-]{1,30}$ ]]; then echo "Canal inválido: $CANAL" >&2; exit 1; fi
+if [ "$CANAL" = "general" ]; then EXE="TeToca.exe"; JSON="ultima.json"; else EXE="TeToca-$CANAL.exe"; JSON="ultima-$CANAL.json"; fi
 ./build/compilar.sh "$VERSION"
 SHA=$(cut -d' ' -f1 dist/TeToca.exe.sha256)
+RAIZ=$(pwd)
 TMP=$(mktemp -d)
-git worktree add --detach "$TMP" >/dev/null
+git fetch -q origin publicado
+git worktree add --detach "$TMP" origin/publicado >/dev/null
 (
   cd "$TMP"
-  git checkout --orphan publicado-nuevo >/dev/null 2>&1
-  git rm -rf . >/dev/null 2>&1 || true
-  cp "$OLDPWD/dist/TeToca.exe" .
-  python3 - "$VERSION" "$NOTAS" "$SHA" <<'EOF'
+  # rama nueva sin historial, pero con los archivos que ya estaban (otros canales)
+  git checkout -q --orphan publicado-nuevo
+  cp "$RAIZ/dist/TeToca.exe" "$EXE"
+  python3 - "$VERSION" "$NOTAS" "$SHA" "$EXE" "$JSON" <<'PY'
 import json, sys
-v, notas, sha = sys.argv[1:4]
-json.dump({"version": v, "notas": notas, "sha256": sha, "archivo": "TeToca.exe"},
-          open("ultima.json", "w"), ensure_ascii=False, indent=1)
-EOF
-  printf '# TeToca · versión publicada\n\nÚltima versión: **%s**\n\nDescargar: [TeToca.exe](https://github.com/imansillaaa-collab/TeToca/raw/publicado/TeToca.exe)\n\n%s\n' "$VERSION" "$NOTAS" > README.md
-  git add TeToca.exe ultima.json README.md
-  git commit -q -m "TeToca $VERSION"
-  git push -f origin HEAD:publicado
+v, notas, sha, exe, js = sys.argv[1:6]
+json.dump({"version": v, "notas": notas, "sha256": sha, "archivo": exe}, open(js, "w"), ensure_ascii=False, indent=1)
+PY
+  python3 "$RAIZ/build/readme_publicado.py" > README.md
+  git add -A
+  git commit -q -m "TeToca $VERSION ($CANAL)"
+  git push -q -f origin HEAD:publicado
 )
 git worktree remove --force "$TMP"
 git branch -D publicado-nuevo >/dev/null 2>&1 || true
-echo "Publicada la versión $VERSION"
+echo "Publicada la versión $VERSION en el canal $CANAL"

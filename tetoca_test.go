@@ -325,3 +325,39 @@ func TestDosRegistros(t *testing.T) {
 		t.Fatal("no borró la lista del día anterior")
 	}
 }
+
+func TestCanales(t *testing.T) {
+	pub := map[string]string{
+		"/ultima.json":        `{"version":"2.0.0","sha256":"` + strings.Repeat("a", 64) + `","archivo":"TeToca.exe"}`,
+		"/ultima-prueba.json": `{"version":"2.1.0","sha256":"` + strings.Repeat("b", 64) + `","archivo":"TeToca-prueba.exe"}`,
+		"/ultima-viejo.json":  `{"version":"1.9.0","sha256":"` + strings.Repeat("c", 64) + `","archivo":"TeToca-viejo.exe"}`,
+	}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, ok := pub[r.URL.Path]
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		_, _ = w.Write([]byte(b))
+	}))
+	defer srv.Close()
+	antes, vAntes := basePublicado, Version
+	defer func() { basePublicado, Version = antes, vAntes; setCanal("") }()
+	basePublicado, Version = srv.URL+"/", "1.0.0"
+	for _, c := range []struct{ canal, version, archivo string }{
+		{"", "2.0.0", "TeToca.exe"}, {"prueba", "2.1.0", "TeToca-prueba.exe"},
+		{"viejo", "2.0.0", "TeToca.exe"}, {"noexiste", "2.0.0", "TeToca.exe"},
+	} {
+		updMu.Lock()
+		upd = UpdInfo{}
+		updMu.Unlock()
+		setCanal(c.canal)
+		buscarActualizacion()
+		if upd.Version != c.version || !strings.HasSuffix(urlExe, "/"+c.archivo) {
+			t.Fatalf("canal %q: esperaba %s (%s), vino %s (%s)", c.canal, c.version, c.archivo, upd.Version, urlExe)
+		}
+	}
+	if canalValido("Tandil!") || !canalValido("tandil-2") {
+		t.Fatal("validación de canal")
+	}
+}

@@ -483,7 +483,9 @@
           <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="btn" style="padding:0 18px" id="cBuscarUpd">Buscar actualizaciones</button>
           ${u.disponible ? '<button class="btn" style="background:#1E54B0;color:#fff;border:0;padding:0 18px" id="cAplicar">Actualizar ahora</button>' : ''}
           ${u.hayAnterior ? '<button class="btn rojo" style="padding:0 18px" id="cAnterior">Volver a la versión anterior</button>' : ''}</div>
-          <p class="nota">Las actualizaciones se bajan de internet. Los datos de los turnos nunca salen de la oficina.</p></div>
+          <div class="campo"><label>Canal</label><div class="segc"><button data-canal="" class="${!c.canal ? 'on' : ''}">General</button><button data-canal="prueba" class="${c.canal === 'prueba' ? 'on' : ''}">Prueba</button>${c.canal && c.canal !== 'prueba' ? `<button class="on">${esc(c.canal)}</button>` : ''}</div>
+            <input type="text" id="cCanal" placeholder="Otro canal" style="max-width:130px" value=""></div>
+          <p class="nota">Las actualizaciones se bajan de internet. Los datos de los turnos nunca salen de la oficina. En el canal <strong>Prueba</strong> las versiones nuevas llegan antes que al resto.</p></div>
         ${urlInstalacion() ? `<div class="card pad" style="grid-column:1/-1;display:flex;align-items:center;gap:18px;flex-wrap:wrap"><div style="flex:1;min-width:260px"><h2>Instalación en esta PC</h2><p class="s">Si TeToca está en su carpeta, si se abre solo al prender la PC y si tiene permiso de red. También para desinstalarlo.</p></div>
           <div style="display:flex;gap:10px"><a class="btn" style="padding:0 18px;text-decoration:none;display:inline-flex;align-items:center" href="${urlInstalacion()}">Instalación de esta PC…</a></div></div>` : ''}
         <div class="card pad" style="grid-column:1/-1"><h2>Tema del televisor</h2><p class="s">Cómo se ve la pantalla de la sala. Se cambia en el momento, sin reconectar el TV.</p>
@@ -516,6 +518,8 @@
     if ($('cSinLogo')) $('cSinLogo').onclick = () => api('/api/logo', undefined, 'DELETE');
     $('cCargar').onclick = () => cargarTurnos();
     $('cManual').onclick = agregarManual;
+    document.querySelectorAll('[data-canal]').forEach((b) => { b.onclick = () => api('/api/config', { canal: b.dataset.canal }).then((r) => r && toast('Canal: ' + (b.dataset.canal || 'general') + '. Buscando actualizaciones…')); });
+    $('cCanal').onchange = () => { const v = $('cCanal').value.trim().toLowerCase(); if (!/^[a-z0-9-]{1,30}$/.test(v)) { toast('El canal va en minúsculas, sin espacios (ej: tandil).', true); return; } api('/api/config', { canal: v }).then((r) => r && toast('Canal: ' + v + '.')); };
     document.querySelectorAll('[data-nreg]').forEach((b) => { b.onclick = () => api('/api/config', { registros: b.dataset.nreg === '2' ? [regs()[0] || 'R1', regs()[1] || 'R2'] : [] }); });
     const guardarRegs = () => api('/api/config', { registros: [$('cReg1').value.trim() || 'R1', $('cReg2').value.trim() || 'R2'] });
     if ($('cReg1')) { $('cReg1').onchange = guardarRegs; $('cReg2').onchange = guardarRegs; }

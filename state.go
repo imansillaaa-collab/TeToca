@@ -103,6 +103,8 @@ type Config struct {
 	// Nombres de los registros que comparten la mesa de entradas. Con uno solo (o
 	// ninguno) TeToca funciona como siempre, sin etiquetas.
 	Registros []string `json:"registros"`
+	// Canal de actualizaciones ("" = general). Ver update.go.
+	Canal string `json:"canal"`
 }
 
 var temasTV = map[string]bool{"noche": true, "celeste": true, "albiceleste": true, "sol": true, "claro": true, "contraste": true, "verde": true}
@@ -148,6 +150,10 @@ func NewStore(dir string) *Store {
 	}
 	_, err := os.Stat(filepath.Join(dir, "logo.png"))
 	s.C.TieneLogo = err == nil
+	if !canalValido(s.C.Canal) {
+		s.C.Canal = ""
+	}
+	setCanal(s.C.Canal)
 	s.limpiarSiOtroDia()
 	return s
 }

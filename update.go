@@ -124,32 +124,76 @@ var basePublicado = "https://raw.githubusercontent.com/" + Repo + "/publicado/"
 
 func urlPublicado(archivo string) string { return basePublicado + archivo }
 
-func buscarActualizacion() {
-	resp, err := pedir(urlPublicado("ultima.json")+"?t="+strconv.FormatInt(time.Now().Unix(), 10), 20*time.Second)
+// Canal de actualizaciones de esta oficina: "" o "general" para todos; "prueba"
+// (tu registro, donde todo llega primero) u otro nombre para una oficina puntual.
+var canal string
+
+func setCanal(c string) {
+	updMu.Lock()
+	canal = c
+	updMu.Unlock()
+}
+
+func canalValido(c string) bool {
+	if len(c) > 30 {
+		return false
+	}
+	for _, r := range c {
+		if !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '-') {
+			return false
+		}
+	}
+	return true
+}
+
+type ultimaPub struct {
+	Version string `json:"version"`
+	Notas   string `json:"notas"`
+	SHA256  string `json:"sha256"`
+	Archivo string `json:"archivo"`
+}
+
+func leerUltima(nombre string) (ultimaPub, bool) {
+	var ult ultimaPub
+	resp, err := pedir(urlPublicado(nombre)+"?t="+strconv.FormatInt(time.Now().Unix(), 10), 20*time.Second)
 	if err != nil {
-		logf("buscar actualización: %v", err)
-		return
+		logf("buscar actualización (%s): %v", nombre, err)
+		return ult, false
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		logf("buscar actualización: HTTP %d", resp.StatusCode)
-		return
+		if resp.StatusCode != 404 {
+			logf("buscar actualización (%s): HTTP %d", nombre, resp.StatusCode)
+		}
+		return ult, false
 	}
-	var ult struct {
-		Version string `json:"version"`
-		Notas   string `json:"notas"`
-		SHA256  string `json:"sha256"`
-		Archivo string `json:"archivo"`
-	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 64<<10)).Decode(&ult); err != nil {
-		return
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 64<<10)).Decode(&ult); err != nil || ult.SHA256 == "" {
+		return ult, false
 	}
 	if ult.Archivo == "" {
 		ult.Archivo = "TeToca.exe"
 	}
+	return ult, true
+}
+
+// buscarActualizacion mira la última versión general y, si la oficina está en un
+// canal, también la de su canal; se queda con la más nueva de las dos.
+func buscarActualizacion() {
+	updMu.Lock()
+	c := canal
+	updMu.Unlock()
+	ult, ok := leerUltima("ultima.json")
+	if c != "" && c != "general" {
+		if uc, okc := leerUltima("ultima-" + c + ".json"); okc && (!ok || versionMayor(uc.Version, ult.Version)) {
+			ult, ok = uc, true
+		}
+	}
+	if !ok {
+		return
+	}
 	updMu.Lock()
 	defer updMu.Unlock()
-	if ult.SHA256 != "" && versionMayor(ult.Version, Version) {
+	if versionMayor(ult.Version, Version) {
 		upd.Disponible, upd.Version, upd.Notas = true, strings.TrimPrefix(ult.Version, "v"), strings.TrimSpace(ult.Notas)
 		urlExe, urlHash = urlPublicado(ult.Archivo), strings.ToLower(strings.TrimSpace(ult.SHA256))
 	} else if upd.Estado == "" {
@@ -254,6 +298,7 @@ func reemplazar(nuevo []byte) error {
 func actualizarPuesto() {
 	time.Sleep(2 * time.Minute)
 	for {
+		canalDeLaCentral()
 		buscarActualizacion()
 		updMu.Lock()
 		disp, ue, uh, v := upd.Disponible, urlExe, urlHash, upd.Version
@@ -320,5 +365,25 @@ func chequeoPeriodico() {
 			store.avisar()
 		}
 		time.Sleep(3 * time.Hour)
+	}
+}
+
+// canalDeLaCentral: el puesto usa el mismo canal que su central.
+func canalDeLaCentral() {
+	localMu.Lock()
+	ip := local.CentralIP
+	localMu.Unlock()
+	if ip == "" {
+		return
+	}
+	c := http.Client{Timeout: 3 * time.Second}
+	resp, err := c.Get(fmt.Sprintf("http://%s:%d/api/info", ip, Puerto))
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	var i struct{ Canal string }
+	if json.NewDecoder(io.LimitReader(resp.Body, 64<<10)).Decode(&i) == nil && canalValido(i.Canal) {
+		setCanal(i.Canal)
 	}
 }

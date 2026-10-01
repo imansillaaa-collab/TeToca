@@ -219,9 +219,9 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 	})
 	mux.HandleFunc("/api/config", func(w http.ResponseWriter, r *http.Request) {
 		var q struct {
-			Sonido, Tema, Organismo, Oficina, TemaTV, Seccional *string
-			Registros                                           *[]string
-			Ultimos, Ausentes                                   *int
+			Sonido, Tema, Organismo, Oficina, TemaTV, Seccional, Canal *string
+			Registros                                                  *[]string
+			Ultimos, Ausentes                                          *int
 		}
 		if err := leerBody(r, &q); err != nil {
 			jsonErr(w, err)
@@ -256,6 +256,17 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 			}
 			if q.Oficina != nil {
 				c.Oficina = *q.Oficina
+			}
+			if q.Canal != nil {
+				cn := strings.ToLower(strings.TrimSpace(*q.Canal))
+				if cn == "general" {
+					cn = ""
+				}
+				if canalValido(cn) {
+					c.Canal = cn
+					setCanal(cn)
+					go func() { buscarActualizacion(); store.avisar() }()
+				}
 			}
 			if q.Seccional != nil {
 				c.Seccional = strings.TrimSpace(*q.Seccional)
@@ -385,7 +396,10 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 	})
 	mux.HandleFunc("/api/info", func(w http.ResponseWriter, r *http.Request) {
 		h, _ := os.Hostname()
-		jsonOK(w, map[string]interface{}{"app": "TeToca", "version": Version, "host": h, "ips": ipsLocales()})
+		updMu.Lock()
+		cn := canal
+		updMu.Unlock()
+		jsonOK(w, map[string]interface{}{"app": "TeToca", "version": Version, "host": h, "ips": ipsLocales(), "canal": cn})
 	})
 }
 
