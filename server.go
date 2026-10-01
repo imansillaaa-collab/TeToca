@@ -61,7 +61,7 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 			w.Header().Set("Cache-Control", "max-age=31536000")
 		} else if strings.HasSuffix(r.URL.Path, ".mp3") {
 			w.Header().Set("Content-Type", "audio/mpeg")
-			w.Header().Set("Cache-Control", "max-age=86400")
+			w.Header().Set("Cache-Control", "no-cache")
 		} else {
 			w.Header().Set("Cache-Control", "no-cache")
 		}
@@ -298,6 +298,35 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 		}
 		store.SetConfig(func(c *Config) { c.TV.Receptor = q.Receptor })
 		caster.Conectar()
+		jsonOK(w, nil)
+	})
+	mux.HandleFunc("/api/tv/probar-sonido", func(w http.ResponseWriter, r *http.Request) {
+		store.mu.Lock()
+		pruebaSonido++
+		tvSonido = nil
+		store.mu.Unlock()
+		store.avisar()
+		jsonOK(w, nil)
+	})
+	mux.HandleFunc("/api/tv/reporte-sonido", func(w http.ResponseWriter, r *http.Request) {
+		var q ReporteSonido
+		if err := leerBody(r, &q); err != nil {
+			jsonErr(w, err)
+			return
+		}
+		if len(q.Detalle) > 300 {
+			q.Detalle = q.Detalle[:300]
+		}
+		q.Hora = time.Now()
+		logf("sonido en el TV: ok=%v prueba=%v %s", q.OK, q.Prueba, q.Detalle)
+		store.mu.Lock()
+		if q.Prueba || tvSonido == nil || !tvSonido.Prueba {
+			tvSonido = &q
+		}
+		store.mu.Unlock()
+		if q.Prueba {
+			store.avisar()
+		}
 		jsonOK(w, nil)
 	})
 	mux.HandleFunc("/api/update/buscar", func(w http.ResponseWriter, r *http.Request) {

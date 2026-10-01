@@ -91,20 +91,47 @@
     return archivos[id];
   }
   function precargar(id) { if (DUR[id]) archivo(id); }
-  function tocar(id) {
+  function info(a) {
+    return a ? 'listo=' + a.readyState + ' red=' + a.networkState + ' vol=' + a.volume + (a.muted ? ' SILENCIADO' : '') + (a.error ? ' error=' + a.error.code : '') : 'sin audio';
+  }
+  // tocar(id, cb): cb(ok, detalle) cuenta cómo salió (lo usa la prueba de sonido del TV).
+  function tocar(id, cb) {
     if (!DUR[id]) id = 'dingdong';
-    var a = archivo(id);
-    if (a) {
-      try {
-        a.pause(); a.currentTime = 0; a.volume = 1;
-        var p = a.play();
-        if (p && p.then) {
-          p.then(function () { ultimoOK = true; }, function () { ultimoOK = false; sintetizar(id); });
-        } else ultimoOK = true;
-        return DUR[id];
-      } catch (e) {}
+    cb = cb || function () {};
+    var intentos = 0;
+    function porSintesis(motivo) {
+      var d = sintetizar(id), c = ctx;
+      cb(!!(c && c.state === 'running'), 'mp3 falló (' + motivo + '); sonido generado, audio=' + (c ? c.state : 'no disponible'));
+      return d;
     }
-    return sintetizar(id);
+    function intentar() {
+      intentos++;
+      var a = archivo(id);
+      if (!a) return porSintesis('sin reproductor');
+      if (a.error) { archivos[id] = null; a = archivo(id); }
+      try {
+        a.pause(); a.currentTime = 0; a.volume = 1; a.muted = false;
+        var p = a.play();
+        var verificar = function () {
+          // en algunos equipos play() "anda" pero el audio no avanza: lo controlamos
+          setTimeout(function () {
+            if (a.currentTime > 0 || a.ended) { ultimoOK = true; cb(true, 'mp3 ' + info(a)); }
+            else if (intentos < 2) { archivos[id] = null; intentar(); }
+            else { ultimoOK = false; porSintesis('no avanzó, ' + info(a)); }
+          }, 1200);
+        };
+        if (p && p.then) {
+          p.then(function () { ultimoOK = true; verificar(); }, function (e) {
+            if (intentos < 2) { archivos[id] = null; intentar(); }
+            else { ultimoOK = false; porSintesis((e && (e.name + ': ' + e.message)) || 'rechazado'); }
+          });
+        } else verificar();
+      } catch (e) {
+        porSintesis(String(e));
+      }
+    }
+    intentar();
+    return DUR[id];
   }
   function sintetizar(id) {
     var c = audio();

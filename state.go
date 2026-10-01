@@ -490,7 +490,22 @@ type Vista struct {
 	Hoy     string    `json:"hoy"`
 	Equipos int       `json:"equipos"`
 	Ahora   time.Time `json:"ahora"`
+	// Prueba de sonido: la PC pide, el TV suena y cuenta cómo le fue.
+	PruebaSonido int            `json:"pruebaSonido"`
+	TVSonido     *ReporteSonido `json:"tvSonido,omitempty"`
 }
+
+type ReporteSonido struct {
+	Hora    time.Time `json:"hora"`
+	OK      bool      `json:"ok"`
+	Prueba  bool      `json:"prueba"`
+	Detalle string    `json:"detalle"`
+}
+
+var (
+	pruebaSonido int
+	tvSonido     *ReporteSonido
+)
 
 func (s *Store) Snapshot() []byte {
 	s.mu.Lock()
@@ -501,7 +516,8 @@ func (s *Store) Snapshot() []byte {
 			eq++
 		}
 	}
-	v := Vista{Version: Version, Estado: s.E, Config: s.C, TV: tvStatus(), Update: updInfo(), Hoy: hoy(), Equipos: eq, Ahora: time.Now()}
+	v := Vista{Version: Version, Estado: s.E, Config: s.C, TV: tvStatus(), Update: updInfo(), Hoy: hoy(), Equipos: eq, Ahora: time.Now(),
+		PruebaSonido: pruebaSonido, TVSonido: tvSonido}
 	b, _ := json.Marshal(v)
 	return b
 }

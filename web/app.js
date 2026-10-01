@@ -90,6 +90,19 @@
     return `<span class="pill p-${t.estado}">${esc(txt)}</span>`;
   }
 
+  let esperandoPrueba = 0;
+  function resultadoSonidoTV() {
+    const r = V.tvSonido;
+    if (esperandoPrueba && (!r || !r.prueba)) {
+      if (Date.now() - esperandoPrueba > 8000) return '<span style="color:var(--danger);font-weight:700">El TV no respondió. ¿Está mostrando la pantalla de sala?</span>';
+      setTimeout(() => { if (vista === 'config' && !enEdicion()) vistaConfig(); }, 1500);
+      return '<span style="color:var(--muted)">Esperando al TV…</span>';
+    }
+    if (!r || !r.prueba) return '<span style="color:var(--muted)">Hace sonar el llamado en el televisor y avisa si salió bien.</span>';
+    return r.ok ? `<span style="color:var(--okFg);font-weight:700">✓ El TV reprodujo el sonido.</span> <span style="color:var(--muted)">Si no se escuchó, es el volumen del TV o del Chromecast.</span>`
+      : `<span style="color:var(--danger);font-weight:700">✗ El TV no pudo reproducir el sonido.</span> <span style="color:var(--muted)">${esc(r.detalle)}</span>`;
+  }
+
   // La instalación la maneja el programa de cada PC: en un puesto, su ayudante local
   // (127.0.0.1:8767); en la central, la propia central. Desde otra PC no se muestra.
   function urlInstalacion() {
@@ -430,7 +443,9 @@
             <b>${n}${id === 'noche' ? ' <span style="font-weight:600;color:var(--muted);font-size:12px">(actual)</span>' : ''}</b><small>${d}</small></button>`).join('')}</div></div>
         <div class="card pad" style="grid-column:1/-1"><h2>Televisor</h2><p class="s">Si el TV se conecta pero no muestra la pantalla de sala, probá el otro receptor. Los dos son gratuitos.</p>
           <div class="campo"><label>Receptor</label><div class="segc"><button data-rec="dashcast" class="${(c.tv.receptor || 'dashcast') === 'dashcast' ? 'on' : ''}">DashCast (recomendado)</button><button data-rec="urlcast" class="${c.tv.receptor === 'urlcast' ? 'on' : ''}">URL Cast Receiver</button></div>
-          <a href="/tv" target="_blank" class="chico" style="text-decoration:none">Abrir pantalla de sala en el navegador</a></div></div>
+          <a href="/tv" target="_blank" class="chico" style="text-decoration:none">Abrir pantalla de sala en el navegador</a></div>
+          <div class="campo"><label>Sonido en el TV</label><button class="chico" id="cProbarTV">Probar sonido en el TV</button>
+            <span id="cTVSon" style="font-size:13px;line-height:1.4">${resultadoSonidoTV()}</span></div></div>
       </div></div>`;
     document.querySelectorAll('[data-play]').forEach((b) => { b.onclick = () => { const id = b.dataset.play; sonando = id; const d = T.tocar(id); vistaConfig(); setTimeout(() => { sonando = null; if (vista === 'config' && !enEdicion()) vistaConfig(); }, d * 1000); }; });
     document.querySelectorAll('[data-elegir]').forEach((b) => { b.onclick = () => { T.tocar(b.dataset.elegir); api('/api/config', { sonido: b.dataset.elegir }); }; });
@@ -439,6 +454,7 @@
     document.querySelectorAll('[data-estilo]').forEach((b) => { b.onclick = () => { estilo = b.dataset.estilo; guardarLocal('tetoca-estilo', estilo); render(); }; });
     document.querySelectorAll('[data-temtv]').forEach((b) => { b.onclick = () => api('/api/config', { temaTV: b.dataset.temtv }); });
     document.querySelectorAll('[data-rec]').forEach((b) => { b.onclick = () => api('/api/tv/receptor', { receptor: b.dataset.rec }); });
+    $('cProbarTV').onclick = () => { esperandoPrueba = Date.now(); api('/api/tv/probar-sonido', {}); vistaConfig(); };
     $('cBox').onchange = () => api('/api/pc', { pc: PC, box: $('cBox').value.trim() });
     $('cMostrar').onclick = () => api('/api/pc', { pc: PC, mostrarBox: !yo.mostrarBox });
     $('cOrg').onchange = () => api('/api/config', { organismo: $('cOrg').value.trim() });

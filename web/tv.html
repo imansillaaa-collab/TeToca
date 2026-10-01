@@ -131,7 +131,7 @@ body.t-sol .solfondo{display:block;opacity:.22}
 <script src="/static/comun.js"></script>
 <script>
 (function () {
-  var T = window.TT, ultimoSeq = null, sonido = 'dingdong', logoVer = '';
+  var T = window.TT, ultimoSeq = null, ultimaPrueba = null, sonido = 'dingdong', logoVer = '';
   var DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
   var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   function $(id) { return document.getElementById(id); }
@@ -204,12 +204,25 @@ body.t-sol .solfondo{display:block;opacity:.22}
     // llamado nuevo: titilar y sonar
     if (ultimoSeq !== null && e.seq > ultimoSeq && ultimo && ultimo.seq > ultimoSeq) {
       box.className = 'actual'; void box.offsetWidth; box.className = 'actual flash';
-      T.tocar(sonido);
-      setTimeout(function () { if (!T.audioActivo()) $('sonido').style.display = 'block'; }, 400);
+      T.tocar(sonido, function (ok, det) { reportar(ok, det, false); });
+      setTimeout(function () { if (!T.audioActivo()) $('sonido').style.display = 'block'; }, 1600);
     }
+    // prueba de sonido pedida desde una PC
+    if (ultimaPrueba !== null && v.pruebaSonido > ultimaPrueba) {
+      T.tocar(sonido, function (ok, det) { reportar(ok, det, true); });
+    }
+    ultimaPrueba = v.pruebaSonido || 0;
     ultimoSeq = e.seq;
     if (v.version && window.__ver && v.version !== window.__ver) location.reload();
     window.__ver = v.version;
+  }
+
+  function reportar(ok, det, prueba) {
+    try {
+      var x = new XMLHttpRequest();
+      x.open('POST', '/api/tv/reporte-sonido'); x.setRequestHeader('Content-Type', 'application/json');
+      x.send(JSON.stringify({ ok: ok, prueba: prueba, detalle: sonido + ' · ' + det + ' · ' + navigator.userAgent.slice(0, 120) }));
+    } catch (e) {}
   }
 
   document.addEventListener('click', function () { T.audio(); T.precargar(sonido); $('sonido').style.display = 'none'; });
