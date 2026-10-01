@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TeToca · Sala de espera</title>
+<title>TeToca</title>
 <link rel="icon" href="/static/icono.png">
 <link rel="stylesheet" href="/static/fuentes.css">
 <style>
@@ -13,7 +13,7 @@ body{--bg:#0A1120;--txt:#fff;--mut:#93A3BF;--top:transparent;--topB:#1C2740;--to
  --panel:#0E1729;--panelB:#1C2740;--itemB:#1C2740;--itemP:#C9A95A;--hora:#7F8FAD;--vacio:#56627A;
  --tagMb:#1B3355;--tagMf:#A9CDFF;--tagCb:#3D2E12;--tagCf:#FFD78A;--tagAb:#45211F;--tagAf:#FFB4AB;
  --ausB:#1A1216;--ausBd:#4A2426;--ausT:#FFB4AB;--ausI:#3A1F22;--ausH:#A88C8A;--pie:#0D1628;--pieTxt:#93A3BF;--pieDot:#3A4A68}
-body.t-celeste{--bg:#EEF4FA;--txt:#0F2A4A;--mut:#5B7593;--top:#74ACDF;--topB:#5E9AD3;--topTxt:#fff;--topSub:#EAF3FC;--div:rgba(255,255,255,.55);
+body.t-celeste{--topSecc:#FFF6D6;--bg:#EEF4FA;--txt:#0F2A4A;--mut:#5B7593;--top:#74ACDF;--topB:#5E9AD3;--topTxt:#fff;--topSub:#EAF3FC;--div:rgba(255,255,255,.55);
  --card:#fff;--cardB:#CFE0F1;--flash:#CFE3F7;--pre:#1F5FA8;--chipM:#74ACDF;--chipC:#F6B40E;--chipTxt:#0F2A4A;
  --panel:#fff;--panelB:#CFE0F1;--itemB:#E1ECF7;--itemP:#1F5FA8;--hora:#7A92AE;--vacio:#9AB0C8;
  --tagMb:#DDEBF8;--tagMf:#1F5FA8;--tagCb:#FDF0CF;--tagCf:#8A5A00;--tagAb:#FBE6E4;--tagAf:#A2332A;
@@ -38,7 +38,7 @@ body.t-contraste{--bg:#000;--txt:#fff;--mut:#E5E7EB;--top:#000;--topB:#fff;--top
  --panel:#000;--panelB:#fff;--itemB:#555;--itemP:#FFE600;--hora:#E5E7EB;--vacio:#9CA3AF;
  --tagMb:#FFE600;--tagMf:#000;--tagCb:#fff;--tagCf:#000;--tagAb:#FF5A4E;--tagAf:#000;
  --ausB:#000;--ausBd:#FF5A4E;--ausT:#FF5A4E;--ausI:#555;--ausH:#E5E7EB;--pie:#000;--pieTxt:#fff;--pieDot:#FFE600}
-body.t-verde{--bg:#F1F7F4;--txt:#12352D;--mut:#5E7F76;--top:#1D6B5A;--topB:#1D6B5A;--topTxt:#fff;--topSub:#CFE8E1;--div:rgba(255,255,255,.4);
+body.t-verde{--topSecc:#F6C667;--bg:#F1F7F4;--txt:#12352D;--mut:#5E7F76;--top:#1D6B5A;--topB:#1D6B5A;--topTxt:#fff;--topSub:#CFE8E1;--div:rgba(255,255,255,.4);
  --card:#fff;--cardB:#CFE3DB;--flash:#D3F0E6;--pre:#1D6B5A;--chipM:#7FD1B9;--chipC:#F6C667;--chipTxt:#12352D;
  --panel:#fff;--panelB:#CFE3DB;--itemB:#E4F0EB;--itemP:#1D6B5A;--hora:#7C9A92;--vacio:#A9C4BC;
  --tagMb:#DDF1EA;--tagMf:#1D6B5A;--tagCb:#FDF0CF;--tagCf:#8A5A00;--tagAb:#FBE6E4;--tagAf:#A2332A;
@@ -56,7 +56,8 @@ body.t-albiceleste .franja{display:block}
 .marca img{width:6.7vh;height:6.7vh;border-radius:50%;display:block;box-shadow:0 0 0 .4vh rgba(255,255,255,.12);margin-right:1.7vh;object-fit:cover}
 .org{font-family:"Montserrat",Arial,sans-serif;font-weight:700;font-size:5.2vh;letter-spacing:-.01em;line-height:1}
 .div{width:2px;height:5.9vh;background:var(--div);margin:0 2.2vh}
-.ofi{font-size:3.3vh;font-weight:800;letter-spacing:-.01em}
+.ofi{font-size:4.8vh;font-weight:800;letter-spacing:-.015em;line-height:1.05;white-space:nowrap}
+.ofi .secc{color:var(--topSecc,var(--pre));margin-left:.25em}
 .sub{font-size:2vh;color:var(--topSub);font-weight:500;margin-top:.2vh}
 .reloj{text-align:right}
 .reloj b{font-family:"Space Grotesk",Arial,sans-serif;font-size:5.6vh;font-weight:600;line-height:1;display:block}
@@ -114,7 +115,7 @@ body.t-sol .solfondo{display:block;opacity:.22}
     <div class="marca">
       <img id="logo" src="/logo.png" alt="">
       <span class="org" id="org"></span><span class="div" id="orgDiv"></span>
-      <div><div class="ofi" id="ofi">Registro Automotor</div><div class="sub">Sala de espera</div></div>
+      <div class="ofi"><span id="ofi">Registro Automotor</span> <span id="secc" class="secc"></span></div>
     </div>
     <div class="reloj"><b id="hora">--:--</b><span id="fecha"></span></div>
   </div>
@@ -157,7 +158,8 @@ body.t-sol .solfondo{display:block;opacity:.22}
     if (sonido !== (c.sonido || 'dingdong') || !render.pre) { sonido = c.sonido || 'dingdong'; T.precargar(sonido); render.pre = true; }
     $('org').textContent = c.organismo || '';
     $('org').style.display = $('orgDiv').style.display = c.organismo ? '' : 'none';
-    $('ofi').textContent = c.oficina || 'Sala de espera';
+    $('ofi').textContent = c.oficina || 'Registro Automotor';
+    $('secc').textContent = c.seccional || '';
     var lv = c.tieneLogo ? 'si' : 'no';
     if (lv !== logoVer) { logoVer = lv; $('logo').src = '/logo.png?v=' + new Date().getTime(); }
     for (i = 0; i < (e.turnos || []).length; i++) porId[e.turnos[i].id] = e.turnos[i];

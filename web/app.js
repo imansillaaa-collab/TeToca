@@ -471,6 +471,7 @@
           <div class="campo"><label>Logo</label><img src="/logo.png?t=${Date.now()}" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover"><button class="chico" id="cLogo">Cambiar logo</button>${c.tieneLogo ? '<button class="link" id="cSinLogo">Quitar</button>' : ''}</div>
           <div class="campo"><label for="cOrg">Texto al lado del logo</label><input type="text" id="cOrg" value="${esc(c.organismo || '')}" placeholder="Ej: DNRPA"></div>
           <div class="campo"><label for="cOfi">Nombre de la oficina</label><input type="text" id="cOfi" value="${esc(c.oficina || '')}" placeholder="Ej: Registro Automotor"></div>
+          <div class="campo"><label for="cSec">Seccional</label><input type="text" id="cSec" value="${esc(c.seccional || '')}" placeholder="Ej: Azul 1 y 2"></div>
           <div class="campo"><label for="cUlt">Últimos llamados</label><input type="number" id="cUlt" min="1" max="8" value="${c.ultimos}" style="max-width:90px">
             <label for="cAusN" style="width:auto">Ausentes</label><input type="number" id="cAusN" min="0" max="6" value="${c.ausentes}" style="max-width:90px"></div></div>
         <div class="card pad"><h2>Turnos del día</h2><p class="s">${turnos().length ? `Cargados: ${turnos().length} turnos del ${esc(V.estado.fecha)}${V.estado.archivo ? ' (' + esc(V.estado.archivo) + ')' : ''}.` : 'Todavía no se cargaron.'}</p>
@@ -508,6 +509,7 @@
     $('cMostrar').onclick = () => api('/api/pc', { pc: PC, mostrarBox: !yo.mostrarBox });
     $('cOrg').onchange = () => api('/api/config', { organismo: $('cOrg').value.trim() });
     $('cOfi').onchange = () => api('/api/config', { oficina: $('cOfi').value.trim() });
+    $('cSec').onchange = () => api('/api/config', { seccional: $('cSec').value.trim() });
     $('cUlt').onchange = () => api('/api/config', { ultimos: +$('cUlt').value });
     $('cAusN').onchange = () => api('/api/config', { ausentes: +$('cAusN').value });
     $('cLogo').onclick = () => $('archivoLogo').click();

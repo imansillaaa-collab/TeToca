@@ -93,6 +93,7 @@ type Config struct {
 	Tema      string             `json:"tema"`
 	Organismo string             `json:"organismo"` // texto grande al lado del logo, ej "DNRPA"
 	Oficina   string             `json:"oficina"`   // ej "Registro Automotor"
+	Seccional string             `json:"seccional"` // ej "Azul 1 y 2" (en el TV va al lado, resaltado)
 	TieneLogo bool               `json:"tieneLogo"`
 	PCs       map[string]*PCConf `json:"pcs"`
 	TV        TVConf             `json:"tv"`
