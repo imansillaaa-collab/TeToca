@@ -59,6 +59,9 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 	mux.Handle("/static/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, ".woff2") {
 			w.Header().Set("Cache-Control", "max-age=31536000")
+		} else if strings.HasSuffix(r.URL.Path, ".mp3") {
+			w.Header().Set("Content-Type", "audio/mpeg")
+			w.Header().Set("Cache-Control", "max-age=86400")
 		} else {
 			w.Header().Set("Cache-Control", "no-cache")
 		}

@@ -44,7 +44,7 @@
     return m < 0 ? 0 : m;
   }
 
-  // ---- Sonidos de llamado (se generan en el momento, no hay archivos de audio) ----
+  // ---- Sonidos de llamado ----
   var ctx = null;
   function audio() {
     try {
@@ -79,7 +79,34 @@
     ['digital', 'Aviso digital', 'Doble bip corto, estilo turnero de banco. Seco y directo.'],
     ['carillon', 'Carillón', 'Cuatro notas tipo reloj de campanario. El más largo y llamativo.']
   ];
+  // Los sonidos están grabados en web/sonidos/*.mp3 (ver build/sonidos.py): así suenan
+  // limpios también en el Chromecast. Si el archivo no se puede reproducir, se
+  // generan en el momento como antes.
+  var DUR = { dingdong: 2.3, campana: 2.5, tres: 2.3, marimba: 1.6, digital: 1.0, carillon: 3.2 };
+  var archivos = {}, ultimoOK = null;
+  function archivo(id) {
+    if (!archivos[id]) {
+      try { archivos[id] = new Audio('/static/sonidos/' + id + '.mp3'); archivos[id].preload = 'auto'; } catch (e) { return null; }
+    }
+    return archivos[id];
+  }
+  function precargar(id) { if (DUR[id]) archivo(id); }
   function tocar(id) {
+    if (!DUR[id]) id = 'dingdong';
+    var a = archivo(id);
+    if (a) {
+      try {
+        a.pause(); a.currentTime = 0; a.volume = 1;
+        var p = a.play();
+        if (p && p.then) {
+          p.then(function () { ultimoOK = true; }, function () { ultimoOK = false; sintetizar(id); });
+        } else ultimoOK = true;
+        return DUR[id];
+      } catch (e) {}
+    }
+    return sintetizar(id);
+  }
+  function sintetizar(id) {
     var c = audio();
     if (!c) return 0;
     var t = c.currentTime + 0.05, dur = 1.6;
@@ -92,7 +119,7 @@
     else { nota(c, t, 659, 1.3, 'sine', 0.45, [[1, 1], [2, 0.2]]); nota(c, t + 0.45, 523, 1.6, 'sine', 0.45, [[1, 1], [2, 0.2]]); dur = 2.1; }
     return dur;
   }
-  function audioActivo() { return !!(ctx && ctx.state === 'running'); }
+  function audioActivo() { return ultimoOK === true || !!(ctx && ctx.state === 'running'); }
 
   // ---- Conexión en tiempo real con la PC central ----
   function conectar(url, alRecibir, alCambiarEstado) {
@@ -113,6 +140,6 @@
     return { cerrar: function () { if (es) es.close(); } };
   }
 
-  w.TT = { nombre: nombre, esc: esc, hhmm: hhmm, minutosDesde: minutosDesde, tocar: tocar, audio: audio,
+  w.TT = { nombre: nombre, esc: esc, hhmm: hhmm, minutosDesde: minutosDesde, tocar: tocar, precargar: precargar, audio: audio,
     audioActivo: audioActivo, SONIDOS: SONIDOS, conectar: conectar };
 })(window);

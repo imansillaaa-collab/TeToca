@@ -153,7 +153,7 @@ body.t-sol .solfondo{display:block;opacity:.22}
 
   function render(v) {
     var e = v.estado, c = v.config, porId = {}, i;
-    sonido = c.sonido || 'dingdong';
+    if (sonido !== (c.sonido || 'dingdong') || !render.pre) { sonido = c.sonido || 'dingdong'; T.precargar(sonido); render.pre = true; }
     $('org').textContent = c.organismo || '';
     $('org').style.display = $('orgDiv').style.display = c.organismo ? '' : 'none';
     $('ofi').textContent = c.oficina || 'Sala de espera';
@@ -212,7 +212,7 @@ body.t-sol .solfondo{display:block;opacity:.22}
     window.__ver = v.version;
   }
 
-  document.addEventListener('click', function () { T.audio(); $('sonido').style.display = 'none'; });
+  document.addEventListener('click', function () { T.audio(); T.precargar(sonido); $('sonido').style.display = 'none'; });
   T.conectar('/api/eventos', render, function (ok, fallas) {
     $('offline').style.display = (!ok && fallas > 2) ? 'block' : 'none';
   });
