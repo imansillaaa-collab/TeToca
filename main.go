@@ -178,6 +178,7 @@ func modoCentral(reinicio, abrir bool) {
 	go func() { _ = http.Serve(l, mux) }()
 	go responderDescubrimiento()
 	go caster.Loop()
+	go store.VigilarDia()
 	go chequeoPeriodico()
 	url := fmt.Sprintf("http://127.0.0.1:%d/?pc=%s", Puerto, urlq(local.PC))
 	if !reinicio || abrir {

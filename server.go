@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -160,12 +161,28 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 			jsonErr(w, err)
 			return
 		}
-		store.Cargar(turnos, fecha, h.Filename)
+		reg := r.FormValue("registro")
+		if reg != "2" {
+			reg = "1"
+		}
+		store.Cargar(turnos, fecha, h.Filename, reg)
 		aviso := ""
 		if fecha != "" && fecha != hoy() {
 			aviso = "Ojo: el archivo tiene turnos del " + fecha + " y hoy es " + hoy() + "."
 		}
 		jsonOK(w, map[string]interface{}{"ok": true, "cantidad": len(turnos), "aviso": aviso})
+	})
+	mux.HandleFunc("/api/separar", func(w http.ResponseWriter, r *http.Request) {
+		var q struct{ ID string }
+		if err := leerBody(r, &q); err != nil {
+			jsonErr(w, err)
+			return
+		}
+		if err := store.Separar(q.ID); err != nil {
+			jsonErr(w, err)
+			return
+		}
+		jsonOK(w, nil)
 	})
 	mux.HandleFunc("/api/manual", func(w http.ResponseWriter, r *http.Request) {
 		var q struct{ Nombre, Precarga string }
@@ -203,6 +220,7 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 	mux.HandleFunc("/api/config", func(w http.ResponseWriter, r *http.Request) {
 		var q struct {
 			Sonido, Tema, Organismo, Oficina, TemaTV *string
+			Registros                                *[]string
 			Ultimos, Ausentes                        *int
 		}
 		if err := leerBody(r, &q); err != nil {
@@ -215,6 +233,20 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 			}
 			if q.Tema != nil {
 				c.Tema = *q.Tema
+			}
+			if q.Registros != nil && len(*q.Registros) <= 2 {
+				var rs []string
+				for i, n := range *q.Registros {
+					n = strings.TrimSpace(n)
+					if n == "" {
+						n = "R" + strconv.Itoa(i+1)
+					}
+					if len(n) > 20 {
+						n = n[:20]
+					}
+					rs = append(rs, n)
+				}
+				c.Registros = rs
 			}
 			if q.TemaTV != nil && temasTV[*q.TemaTV] {
 				c.TemaTV = *q.TemaTV

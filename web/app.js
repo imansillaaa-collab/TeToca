@@ -82,6 +82,44 @@
     if (c && c.box) return c.box;
     return pc;
   }
+  // ---------- dos registros / varios trámites por persona ----------
+  const regs = () => (V && V.config.registros) || [];
+  const dosReg = () => regs().length >= 2;
+  const nomReg = (id) => regs()[+id - 1] || ('R' + id);
+  const chipReg = (id) => `<span class="rg r${esc(id)}">${esc(nomReg(id))}</span>`;
+  const chipsReg = (t) => (dosReg() ? (t.registros || []).map(chipReg).join('') : '');
+  const cantTr = (t) => (t.tramites && t.tramites.length) || 1;
+  const preCorta = (t) => (t.precarga || '') + (cantTr(t) > 1 ? ' +' + (cantTr(t) - 1) : '');
+  const tramCorto = (t) => (cantTr(t) > 1 ? cantTr(t) + ' trámites' : (t.tramite || ''));
+  const textoBusqueda = (t) => [t.nombre, t.precarga, t.dominio].concat((t.tramites || []).map((x) => x.precarga + ' ' + x.dominio)).join(' ');
+  function tablaTramites(t) {
+    if (cantTr(t) < 2) return `<div style="font-size:13px;color:var(--muted)">${esc(t.tramite || '')}</div>`;
+    return `<div class="trs"><div class="trh"><span>${dosReg() ? 'REG.' : ''}</span><span>PRECARGA</span><span>TRÁMITE</span><span>DOMINIO</span></div>` +
+      t.tramites.map((x) => `<div class="trf"><span>${dosReg() ? chipReg(x.registro) : ''}</span><span class="num" style="font-weight:700">${esc(x.precarga)}</span><span class="tt" title="${esc(x.tramite)}">${esc(x.tramite)}</span><span style="font-weight:700">${esc(x.dominio || '—')}</span></div>`).join('') + '</div>';
+  }
+
+  // Carga de los archivos del día: con dos registros, uno por registro.
+  let cargaReg = '1';
+  function cargarTurnos() {
+    if (!dosReg()) { cargaReg = '1'; $('archivo').click(); return; }
+    modalCarga();
+  }
+  function modalCarga() {
+    const fu = (V.estado.cargadoDia === V.hoy && V.estado.fuentes) || {};
+    const juntos = turnos().filter((t) => cantTr(t) > 1).length;
+    modal(`<h3>Cargar turnos del día</h3><p>Un archivo por registro. Se pueden cargar en cualquier orden; si se vuelve a cargar uno, se actualiza solo ese.</p>` +
+      ['1', '2'].map((id) => {
+        const f = fu[id];
+        return `<div class="slot">${chipReg(id)}<div style="flex:1;min-width:0">${f ? `<b>${esc(f.archivo)}</b><small class="ok">✓ ${f.cantidad} turnos cargados a las ${hhmm(f.cargado)}</small>` : '<b>Sin cargar</b><small>Todavía no se cargó el archivo de este registro.</small>'}</div>
+          <button class="btn" data-cargar="${id}" style="${f ? '' : 'background:#2F6FDB;color:#fff;border:0;'}padding:0 14px">${f ? 'Cambiar' : 'Elegir archivo'}</button></div>`;
+      }).join('') +
+      (juntos ? `<div class="nota" style="margin:0;background:var(--hl);color:var(--ink);border-radius:12px;padding:12px 14px"><strong>${juntos} ${juntos === 1 ? 'persona tiene' : 'personas tienen'} más de un turno</strong> (casi siempre gestores): quedaron en una sola fila cada una, con todos sus trámites.</div>` : '') +
+      `<button class="btn" id="mSi" style="background:#2F6FDB;color:#fff;border:0">Listo</button>`);
+    document.querySelectorAll('[data-cargar]').forEach((b) => { b.onclick = () => { cargaReg = b.dataset.cargar; $('archivo').click(); }; });
+    $('mSi').onclick = () => modal('');
+    $('fondoModal').onclick = (e) => { if (e.target.id === 'fondoModal') modal(''); };
+  }
+
   const ESTADO = { pendiente: 'Pendiente', mesa: 'En mesa', espera_caja: 'Espera caja', caja: 'En caja', terminado: 'Terminado', ausente: 'Ausente', cancelado: 'Cancelado' };
   function pill(t) {
     let txt = ESTADO[t.estado] || t.estado;
@@ -148,7 +186,7 @@
     $('bTema').onclick = () => { tema = temaAct === 'oscuro' ? 'claro' : 'oscuro'; guardarLocal('tetoca-tema', tema); render(); };
     if ($('bCfg')) $('bCfg').onclick = () => irA('config');
     if ($('bVolver')) $('bVolver').onclick = () => irA(miConf().rol || 'rol');
-    if ($('bCargar')) $('bCargar').onclick = () => $('archivo').click();
+    if ($('bCargar')) $('bCargar').onclick = () => cargarTurnos();
   }
 
   // ---------- avisos (actualización, fecha) ----------
@@ -236,23 +274,26 @@
     const esp = esCaja ? T.minutosDesde(t.pasoCaja, llam) : null;
     return `<div class="fila"><span class="tit">${esCaja ? 'COBRANDO AHORA' : 'ATENDIENDO AHORA'}</span>
         <span class="pill ${esCaja ? 'p-caja' : 'p-mesa'}">Llamado ${hhmm(llam)}</span></div>
-      <div><div class="grande num">${esc(t.precarga || '—')}</div><div class="nomg">${esc(nom(t.nombre))}</div></div>
+      <div><div class="grande num">${esc(t.precarga || '—')}</div><div class="nomg">${esc(nom(t.nombre))}</div>
+        ${cantTr(t) > 1 || dosReg() ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap">${chipsReg(t)}${cantTr(t) > 1 ? `<span style="font-size:13px;font-weight:700;color:var(--ink2)">${cantTr(t)} trámites</span>` : ''}</div>` : ''}</div>
       <div class="datos">
-        ${esCaja ? `<div><small>DOMINIO</small><b>${esc(t.dominio || '—')}</b></div><div><small>DE MESA</small><b>${hhmm(t.pasoCaja) || '—'}</b></div><div><small>ESPERÓ</small><b>${esp == null ? '—' : esp + ' min'}</b></div>`
-                : `<div><small>TURNO</small><b>${esc(t.hora || '—')}</b></div><div><small>DOMINIO</small><b>${esc(t.dominio || '—')}</b></div><div><small>ESTADO</small><b>En mesa</b></div>`}
+        ${esCaja ? `<div><small>DOMINIO</small><b>${esc(cantTr(t) > 1 ? 'Ver abajo' : (t.dominio || '—'))}</b></div><div><small>DE MESA</small><b>${hhmm(t.pasoCaja) || '—'}</b></div><div><small>ESPERÓ</small><b>${esp == null ? '—' : esp + ' min'}</b></div>`
+                : `<div><small>TURNO</small><b>${esc(t.hora || '—')}</b></div><div><small>DOMINIO</small><b>${esc(cantTr(t) > 1 ? 'Ver abajo' : (t.dominio || '—'))}</b></div><div><small>ESTADO</small><b>En mesa</b></div>`}
       </div>
-      <div style="font-size:13px;color:var(--muted)">${esc(t.tramite || '')}</div>
+      ${tablaTramites(t)}
       ${esCaja ? `<button class="btn prim verde" id="aTerm">${I.ok}Cobro terminado</button>
         <div class="grid2"><button class="btn" id="aRe">Volver a llamar</button><button class="btn rojo" id="aAus">Ausente</button></div>`
               : `<button class="btn prim amarillo" id="aCaja">Pasar a caja ${I.flecha}</button>
         <div class="grid3"><button class="btn" id="aTerm">Terminado</button><button class="btn" id="aRe">Rellamar</button><button class="btn rojo" id="aAus">Ausente</button></div>`}
-      <button class="link" id="aError">Lo llamé por error</button>`;
+      <div class="fila" style="justify-content:flex-start;gap:18px"><button class="link" id="aError">Lo llamé por error</button>
+      ${!esCaja && cantTr(t) > 1 ? '<button class="link" id="aSeparar">No es la misma persona: separar</button>' : ''}</div>`;
   }
   function enlazarActual() {
     if ($('aCaja')) $('aCaja').onclick = () => accion('pasar_caja').then((r) => r && toast('Pasó a la fila de caja.'));
     if ($('aTerm')) $('aTerm').onclick = () => accion('terminar');
     if ($('aRe')) $('aRe').onclick = () => accion('rellamar');
     if ($('aAus')) $('aAus').onclick = () => accion('ausente');
+    if ($('aSeparar')) $('aSeparar').onclick = () => { const a = miActual(); if (a) confirmar('Separar turnos', 'Se van a mostrar como personas distintas. Seguís atendiendo el primer trámite; los otros vuelven a la lista.', 'Separar', () => api('/api/separar', { id: a.id }).then((r) => r && toast('Listo, quedaron separados.'))); };
     if ($('aError')) $('aError').onclick = () => accion('deshacer_llamado').then((r) => r && toast('Listo, volvió a su lugar en la lista.'));
   }
 
@@ -284,36 +325,42 @@
     const sig = turnos().find((t) => t.estado === 'pendiente');
     $('mSig').innerHTML = `<button class="sig azul" id="bSig" ${yo || !sig ? 'disabled' : ''}>
       <span class="ic">${I.parlante('#fff')}</span>
-      <span style="flex:1"><span class="t1">Llamar siguiente</span><span class="t2">${sig ? esc((sig.precarga ? sig.precarga + ' · ' : '') + nom(sig.nombre) + ' · ' + sig.hora) : 'No quedan turnos pendientes'}</span></span>
+      <span style="flex:1"><span class="t1">Llamar siguiente</span><span class="t2">${sig ? esc((sig.precarga ? preCorta(sig) + ' · ' : '') + nom(sig.nombre) + ' · ' + sig.hora) : 'No quedan turnos pendientes'}</span></span>
       <span class="kbd">ESPACIO</span></button>`;
     $('bSig').onclick = siguiente;
     const aus = turnos().filter((t) => t.estado === 'ausente' && t.ausenteEn !== 'caja').sort((a, b) => new Date(b.ausenteA) - new Date(a.ausenteA));
     $('mAus').innerHTML = `<div class="fila"><span class="tit">AUSENTES</span><span class="pill p-ausente">${aus.length}</span></div>` +
-      (aus.length ? aus.map((t) => `<div class="mini"><div style="flex:1;min-width:0"><div class="n">${esc(nom(t.nombre))}</div><div class="d">${esc(t.precarga)} · turno ${esc(t.hora)} · llamado ${hhmm(t.ausenteA)}</div></div><button class="chico" data-llamar="${esc(t.id)}" ${yo ? 'disabled' : ''}>Llamar</button></div>`).join('')
+      (aus.length ? aus.map((t) => `<div class="mini"><div style="flex:1;min-width:0"><div class="n">${esc(nom(t.nombre))}</div><div class="d">${esc(preCorta(t))} · turno ${esc(t.hora)} · llamado ${hhmm(t.ausenteA)}</div></div><button class="chico" data-llamar="${esc(t.id)}" ${yo ? 'disabled' : ''}>Llamar</button></div>`).join('')
                   : '<div class="vacio">Nadie ausente.</div>');
     $('mAus').querySelectorAll('[data-llamar]').forEach((b) => { b.onclick = () => accion('mesa_llamar', b.dataset.llamar); });
     filasMesa();
   }
   const FILTROS = [['todos', 'Todos', () => true], ['pend', 'Pendientes', (t) => t.estado === 'pendiente'], ['aten', 'En mesa', (t) => t.estado === 'mesa'],
     ['caja', 'En caja', (t) => t.estado === 'espera_caja' || t.estado === 'caja'], ['term', 'Terminados', (t) => t.estado === 'terminado'], ['aus', 'Ausentes', (t) => t.estado === 'ausente']];
+  function filtros() {
+    if (!dosReg()) return FILTROS;
+    return FILTROS.slice(0, 1).concat([['r1', nomReg(1), (t) => (t.registros || []).includes('1')], ['r2', nomReg(2), (t) => (t.registros || []).includes('2')]], FILTROS.slice(1));
+  }
   function filasMesa() {
     const ts = turnos();
+    const FILTROS = filtros();
+    if (!FILTROS.find((x) => x[0] === filtro)) filtro = 'todos';
     $('filtros').innerHTML = FILTROS.map(([k, n, f]) => `<button data-f="${k}" class="${filtro === k ? 'on' : ''}">${n} ${ts.filter(f).length}</button>`).join('');
     $('filtros').querySelectorAll('button').forEach((b) => { b.onclick = () => { filtro = b.dataset.f; filasMesa(); }; });
     if (!ts.length) {
       $('rows').innerHTML = `<div class="vac-lista"><b>Todavía no se cargaron los turnos de hoy</b><span>Descargá el archivo del sistema de turnos y cargalo acá.</span>
         <button class="btn prim" style="background:#2F6FDB;color:#fff;padding:0 22px" id="bCargar2">${I.subir}Cargar turnos del día (XLS)</button></div>`;
-      $('bCargar2').onclick = () => $('archivo').click();
+      $('bCargar2').onclick = () => cargarTurnos();
       return;
     }
     const f = FILTROS.find((x) => x[0] === filtro)[2];
     const q = busqueda.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-    const lista = ts.filter(f).filter((t) => !q || (t.nombre + ' ' + t.precarga + ' ' + t.dominio).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q));
+    const lista = ts.filter(f).filter((t) => !q || textoBusqueda(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q));
     const yo = miActual();
     $('rows').innerHTML = lista.map((t) => `<div class="tr ${yo && yo.id === t.id ? 'act' : ''} ${t.estado === 'terminado' || t.estado === 'cancelado' ? 'fin' : ''}" data-id="${esc(t.id)}">
-        <span class="num" style="font-weight:700">${esc(t.hora)}</span><span class="num dm">${esc(t.precarga)}</span>
-        <span class="n" style="${t.estado === 'cancelado' ? 'text-decoration:line-through' : ''}">${esc(nom(t.nombre))}</span>
-        <span class="tm" title="${esc(t.tramite)}">${esc(t.tramite)}</span><span class="dm">${esc(t.dominio || '—')}</span><span>${pill(t)}</span></div>`).join('') ||
+        <span class="num" style="font-weight:700">${esc(t.hora)}</span><span class="num dm">${esc(preCorta(t))}</span>
+        <span class="n" style="${t.estado === 'cancelado' ? 'text-decoration:line-through' : ''}">${chipsReg(t)}${esc(nom(t.nombre))}</span>
+        <span class="tm" title="${esc(cantTr(t) > 1 ? t.tramites.map((x) => x.tramite).join(' · ') : t.tramite)}" style="${cantTr(t) > 1 ? 'color:var(--ink);font-weight:700' : ''}">${esc(tramCorto(t))}</span><span class="dm">${esc(cantTr(t) > 1 ? (t.tramites.map((x) => x.dominio).filter(Boolean)[0] || '—') + (t.tramites.filter((x) => x.dominio).length > 1 ? ' +' + (t.tramites.filter((x) => x.dominio).length - 1) : '') : (t.dominio || '—'))}</span><span>${pill(t)}</span></div>`).join('') ||
       '<div class="vacio" style="padding:20px">No hay turnos con ese filtro.</div>';
     $('rows').querySelectorAll('.tr').forEach((r) => { r.onclick = () => clickTurno(r.dataset.id); });
   }
@@ -328,7 +375,7 @@
     if (t.estado === 'ausente' && t.ausenteEn === 'caja') { toast(nom(t.nombre) + ' quedó ausente en caja: lo llama la caja.'); return; }
     if (yo) { toast('Primero indicá qué pasó con ' + nom(yo.nombre) + '.', true); return; }
     const extra = t.estado === 'terminado' ? ' Ya figura como terminado.' : '';
-    confirmar('¿Llamar a esta persona?', `<strong style="color:var(--ink)">${esc(nom(t.nombre))}</strong> · precarga ${esc(t.precarga)} · turno ${esc(t.hora)}.${extra}`, 'Llamar', () => accion('mesa_llamar', t.id));
+    confirmar('¿Llamar a esta persona?', `<strong style="color:var(--ink)">${esc(nom(t.nombre))}</strong> · precarga ${esc(preCorta(t))}${cantTr(t) > 1 ? ' (' + cantTr(t) + ' trámites)' : ''} · turno ${esc(t.hora)}.${extra}`, 'Llamar', () => accion('mesa_llamar', t.id));
   }
   function agregarManual() {
     modal(`<h3>Agregar turno a mano</h3><p>Para alguien que no está en el archivo del día.</p>
@@ -369,19 +416,19 @@
     const sig = fila[0];
     $('cSig').innerHTML = `<button class="sig amarillo" id="bSig" ${yo || !sig ? 'disabled' : ''}>
       <span class="ic">${I.parlante('#16181D')}</span>
-      <span style="flex:1"><span class="t1">Llamar siguiente</span><span class="t2">${sig ? esc((sig.precarga ? sig.precarga + ' · ' : '') + nom(sig.nombre) + ' · llegó ' + hhmm(sig.pasoCaja)) : 'No hay nadie esperando'}</span></span>
+      <span style="flex:1"><span class="t1">Llamar siguiente</span><span class="t2">${sig ? esc((sig.precarga ? preCorta(sig) + ' · ' : '') + nom(sig.nombre) + ' · llegó ' + hhmm(sig.pasoCaja)) : 'No hay nadie esperando'}</span></span>
       <span class="kbd">ESPACIO</span></button>`;
     $('bSig').onclick = siguiente;
     $('cCant').textContent = fila.length + ' esperando';
     $('fila').innerHTML = fila.map((t, i) => `<div class="fc"><span class="pos num ${i === 0 ? 'uno' : ''}">${i + 1}</span>
-        <div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:800">${esc(nom(t.nombre))}</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:3px"><span class="num" style="color:var(--ink2);font-weight:600">${esc(t.precarga)}</span> · ${esc(t.tramite)}${t.dominio ? ' · ' + esc(t.dominio) : ''}</div></div>
+        <div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:800">${chipsReg(t)}${esc(nom(t.nombre))}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:3px"><span class="num" style="color:var(--ink2);font-weight:600">${esc(preCorta(t))}</span> · ${esc(tramCorto(t))}${t.dominio && cantTr(t) < 2 ? ' · ' + esc(t.dominio) : ''}</div></div>
         <div style="text-align:right;flex-shrink:0"><div style="font-size:14px;font-weight:700">Llegó ${hhmm(t.pasoCaja)}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">espera ${T.minutosDesde(t.pasoCaja)} min</div></div>
         <button class="chico" data-llamar="${esc(t.id)}" ${yo ? 'disabled' : ''}>Llamar</button></div>`).join('') ||
       '<div class="vac-lista"><b>No hay nadie en la fila</b><span>Cuando mesa de entradas pase a alguien a caja, aparece acá.</span></div>';
     const aus = turnos().filter((t) => t.estado === 'ausente' && t.ausenteEn === 'caja').sort((a, b) => new Date(b.ausenteA) - new Date(a.ausenteA));
     $('cAus').innerHTML = `<div class="fila"><span class="tit">AUSENTES EN CAJA</span><span class="pill p-ausente">${aus.length}</span></div>` +
-      (aus.map((t) => `<div class="mini"><div style="flex:1;min-width:0"><div class="n">${esc(nom(t.nombre))}</div><div class="d">${esc(t.precarga)} · llamado ${hhmm(t.ausenteA)}</div></div><button class="chico" data-llamar="${esc(t.id)}" ${yo ? 'disabled' : ''}>Llamar</button></div>`).join('') || '<div class="vacio">Nadie ausente.</div>');
+      (aus.map((t) => `<div class="mini"><div style="flex:1;min-width:0"><div class="n">${esc(nom(t.nombre))}</div><div class="d">${esc(preCorta(t))} · llamado ${hhmm(t.ausenteA)}</div></div><button class="chico" data-llamar="${esc(t.id)}" ${yo ? 'disabled' : ''}>Llamar</button></div>`).join('') || '<div class="vacio">Nadie ausente.</div>');
     const cob = turnos().filter((t) => t.estado === 'terminado' && t.llamadoCaja && t.llamadoCaja.indexOf('0001-') !== 0).sort((a, b) => new Date(b.termino) - new Date(a.termino));
     $('cCob').innerHTML = `<div class="tit" style="margin-bottom:6px">ÚLTIMOS COBRADOS</div>` +
       (cob.slice(0, 6).map((t) => `<div class="fila" style="font-size:14px;padding:4px 0"><span style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nom(t.nombre))}</span><span style="color:var(--muted)">${hhmm(t.termino)}</span></div>`).join('') || '<div class="vacio">Todavía nadie.</div>');
@@ -428,7 +475,9 @@
             <label for="cAusN" style="width:auto">Ausentes</label><input type="number" id="cAusN" min="0" max="6" value="${c.ausentes}" style="max-width:90px"></div></div>
         <div class="card pad"><h2>Turnos del día</h2><p class="s">${turnos().length ? `Cargados: ${turnos().length} turnos del ${esc(V.estado.fecha)}${V.estado.archivo ? ' (' + esc(V.estado.archivo) + ')' : ''}.` : 'Todavía no se cargaron.'}</p>
           <div style="display:flex;gap:10px;margin-top:14px"><button class="btn" style="background:#2F6FDB;color:#fff;border:0;padding:0 18px" id="cCargar">${I.subir} Cargar turnos del día (XLS)</button><button class="btn" style="padding:0 18px" id="cManual">+ Agregar a mano</button></div>
-          <p class="nota">Si volvés a cargar el archivo el mismo día (por ejemplo con turnos nuevos), no se pierde quién ya fue atendido.</p></div>
+          <div class="campo"><label>Registros</label><div class="segc"><button data-nreg="1" class="${dosReg() ? '' : 'on'}">Uno</button><button data-nreg="2" class="${dosReg() ? 'on' : ''}">Dos, en la misma mesa</button></div></div>
+          ${dosReg() ? `<div class="campo"><label for="cReg1">Nombres</label><input type="text" id="cReg1" value="${esc(nomReg(1))}" style="max-width:150px" placeholder="R1"><input type="text" id="cReg2" value="${esc(nomReg(2))}" style="max-width:150px" placeholder="R2"></div>` : ''}
+          <p class="nota">Si volvés a cargar el archivo el mismo día (por ejemplo con turnos nuevos), no se pierde quién ya fue atendido. Si una persona tiene varios turnos (aunque sean de registros distintos), aparece una sola vez con todos sus trámites. Al día siguiente la lista vieja se borra sola.</p></div>
         <div class="card pad"><h2>Actualizaciones</h2><p class="s">Versión instalada: <strong style="color:var(--ink)">${esc(V.version)}</strong>${u.disponible ? ` · disponible: <strong style="color:var(--ink)">${esc(u.version)}</strong>` : ' · está al día'}</p>
           <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="btn" style="padding:0 18px" id="cBuscarUpd">Buscar actualizaciones</button>
           ${u.disponible ? '<button class="btn" style="background:#1E54B0;color:#fff;border:0;padding:0 18px" id="cAplicar">Actualizar ahora</button>' : ''}
@@ -463,8 +512,11 @@
     $('cAusN').onchange = () => api('/api/config', { ausentes: +$('cAusN').value });
     $('cLogo').onclick = () => $('archivoLogo').click();
     if ($('cSinLogo')) $('cSinLogo').onclick = () => api('/api/logo', undefined, 'DELETE');
-    $('cCargar').onclick = () => $('archivo').click();
+    $('cCargar').onclick = () => cargarTurnos();
     $('cManual').onclick = agregarManual;
+    document.querySelectorAll('[data-nreg]').forEach((b) => { b.onclick = () => api('/api/config', { registros: b.dataset.nreg === '2' ? [regs()[0] || 'R1', regs()[1] || 'R2'] : [] }); });
+    const guardarRegs = () => api('/api/config', { registros: [$('cReg1').value.trim() || 'R1', $('cReg2').value.trim() || 'R2'] });
+    if ($('cReg1')) { $('cReg1').onchange = guardarRegs; $('cReg2').onchange = guardarRegs; }
     $('cBuscarUpd').onclick = () => api('/api/update/buscar', undefined, 'GET').then((r) => r && toast(r.disponible ? 'Hay una versión nueva: ' + r.version : 'Ya tenés la última versión.'));
     if ($('cAplicar')) $('cAplicar').onclick = () => confirmar('Actualizar TeToca', 'El sistema se reinicia en unos segundos y todas las pantallas se recargan solas.', 'Actualizar ahora', () => api('/api/update/aplicar', {}));
     if ($('cAnterior')) $('cAnterior').onclick = () => confirmar('Volver a la versión anterior', 'Se vuelve a la versión que estaba antes de la última actualización. El sistema se reinicia en unos segundos.', 'Volver', () => api('/api/update/anterior', {}), 'rojo');
@@ -492,12 +544,13 @@
   $('archivo').onchange = async (e) => {
     const f = e.target.files[0]; e.target.value = '';
     if (!f) return;
-    const fd = new FormData(); fd.append('archivo', f);
+    const fd = new FormData(); fd.append('archivo', f); fd.append('registro', cargaReg);
     try {
       const r = await fetch('/api/cargar', { method: 'POST', body: fd });
       const j = await r.json();
       if (!r.ok) { toast(j.error || 'No se pudo cargar el archivo.', true); return; }
-      toast('Listo: se cargaron ' + j.cantidad + ' turnos.' + (j.aviso ? ' ' + j.aviso : ''), !!j.aviso);
+      toast('Listo: se cargaron ' + j.cantidad + ' turnos' + (dosReg() ? ' de ' + nomReg(cargaReg) : '') + '.' + (j.aviso ? ' ' + j.aviso : ''), !!j.aviso);
+      if (dosReg()) setTimeout(() => { if ($('modal').innerHTML) modalCarga(); }, 700);
     } catch (err) { toast('No hay conexión con la PC central.', true); }
   };
   $('archivoLogo').onchange = async (e) => {

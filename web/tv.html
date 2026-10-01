@@ -77,6 +77,7 @@ body.t-sol .solfondo{display:block;opacity:.22}
 .nom{margin-top:3vh;font-size:9.3vh;font-weight:800;line-height:1.06;letter-spacing:-.015em;max-width:100%;word-wrap:break-word}
 .lpre{margin-top:3.3vh;font-size:2.2vh;color:var(--mut);font-weight:600;letter-spacing:.12em}
 .pre{font-family:"Space Grotesk",Arial,sans-serif;font-size:9.6vh;font-weight:700;line-height:1.05;color:var(--pre);letter-spacing:.02em;white-space:nowrap}
+.pre .mas{font-family:"Plus Jakarta Sans",Arial,sans-serif;font-size:.36em;font-weight:800;letter-spacing:0;margin-left:.6em;padding:.25em .6em;border-radius:.4em;background:rgba(128,128,128,.16);vertical-align:middle}
 .dir{margin-top:4vh;display:flex;align-items:center}
 .dir .lbl{font-size:2.8vh;color:var(--mut);font-weight:600;margin-right:1.7vh}
 .chip{font-size:3.7vh;font-weight:800;padding:1.3vh 3.7vh;border-radius:99vh;letter-spacing:.02em;color:var(--chipTxt)}
@@ -168,7 +169,8 @@ body.t-sol .solfondo{display:block;opacity:.22}
       var t = porId[ultimo.turnoId];
       inner.innerHTML = '<div class="etq"><span class="pulso"></span>AHORA LLAMANDO</div>' +
         '<div class="nom" id="nomActual">' + T.esc(T.nombre(t.nombre)) + '</div>' +
-        (t.precarga ? '<div class="lpre">N.º DE PRECARGA</div><div class="pre">' + T.esc(t.precarga) + '</div>' : '') +
+        (t.precarga ? '<div class="lpre">N.º DE PRECARGA</div><div class="pre">' + T.esc(t.precarga) +
+          (t.tramites && t.tramites.length > 1 ? '<span class="mas">+' + (t.tramites.length - 1) + (t.tramites.length > 2 ? ' trámites' : ' trámite') + '</span>' : '') + '</div>' : '') +
         '<div class="dir"><span class="lbl">Diríjase a</span><span class="chip ' + (ultimo.dest === 'caja' ? 'caja' : 'mesa') + '">' + T.esc(ultimo.destino) + '</span></div>';
       ajustar($('nomActual'));
     } else {
@@ -184,7 +186,7 @@ body.t-sol .solfondo{display:block;opacity:.22}
     var h = '';
     for (i = 0; i < ult.length; i++) {
       var tu = porId[ult[i].turnoId], aus = tu.estado === 'ausente';
-      h += '<div class="item"><div class="txt"><div class="n">' + T.esc(T.nombre(tu.nombre)) + '</div><div class="p">' + T.esc(tu.precarga) + '</div></div>' +
+      h += '<div class="item"><div class="txt"><div class="n">' + T.esc(T.nombre(tu.nombre)) + '</div><div class="p">' + T.esc(tu.precarga) + (tu.tramites && tu.tramites.length > 1 ? ' +' + (tu.tramites.length - 1) : '') + '</div></div>' +
         '<div class="der"><span class="tag ' + (aus ? 'ausente' : ult[i].dest) + '">' + (aus ? 'AUSENTE' : T.esc(ult[i].etiqueta)) + '</span><span class="hora">' + T.hhmm(ult[i].hora) + '</span></div></div>';
     }
     $('ultimos').innerHTML = h || '<div class="vacio">—</div>';

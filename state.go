@@ -35,6 +35,12 @@ type Turno struct {
 	PC        string `json:"pc,omitempty"`        // PC que lo tiene tomado
 	Manual    bool   `json:"manual,omitempty"`
 
+	// Con dos registros, o cuando la misma persona tiene varios turnos: todos sus
+	// trámites quedan en una sola fila (Precarga/Tramite/Dominio son los del primero).
+	Clave     string    `json:"clave,omitempty"`
+	Registros []string  `json:"registros,omitempty"`
+	Tramites  []Tramite `json:"tramites,omitempty"`
+
 	LlamadoMesa time.Time `json:"llamadoMesa,omitempty"`
 	PasoCaja    time.Time `json:"pasoCaja,omitempty"`
 	LlamadoCaja time.Time `json:"llamadoCaja,omitempty"`
@@ -61,6 +67,9 @@ type Estado struct {
 	Llamados   []Llamado `json:"llamados"`
 	Seq        int       `json:"seq"`
 	Version    int64     `json:"version"`
+	// Archivos cargados hoy, uno por registro ("1", "2"), y personas separadas a mano.
+	Fuentes   map[string]*Fuente `json:"fuentes,omitempty"`
+	Separados map[string]bool    `json:"separados,omitempty"`
 }
 
 type PCConf struct {
@@ -90,6 +99,9 @@ type Config struct {
 	Ultimos   int                `json:"ultimos"`
 	Ausentes  int                `json:"ausentes"`
 	TemaTV    string             `json:"temaTV"` // noche, celeste, albiceleste, sol, claro, contraste, verde
+	// Nombres de los registros que comparten la mesa de entradas. Con uno solo (o
+	// ninguno) TeToca funciona como siempre, sin etiquetas.
+	Registros []string `json:"registros"`
 }
 
 var temasTV = map[string]bool{"noche": true, "celeste": true, "albiceleste": true, "sol": true, "claro": true, "contraste": true, "verde": true}
@@ -135,6 +147,7 @@ func NewStore(dir string) *Store {
 	}
 	_, err := os.Stat(filepath.Join(dir, "logo.png"))
 	s.C.TieneLogo = err == nil
+	s.limpiarSiOtroDia()
 	return s
 }
 
@@ -405,59 +418,6 @@ func ordenar(ts []*Turno) {
 	for i, t := range ts {
 		t.Orden = i
 	}
-}
-
-// Cargar reemplaza la lista del día. Si se vuelve a cargar el mismo día,
-// conserva lo que ya pasó con cada persona.
-func (s *Store) Cargar(nuevos []*Turno, fechaArchivo, archivo string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	key := func(t *Turno) string { return t.Precarga + "|" + t.Nombre }
-	if s.E.CargadoDia == hoy() && len(s.E.Turnos) > 0 {
-		prev := map[string]*Turno{}
-		for _, t := range s.E.Turnos {
-			prev[key(t)] = t
-		}
-		ids := map[string]string{}
-		vistos := map[string]bool{}
-		for _, n := range nuevos {
-			if p, ok := prev[key(n)]; ok {
-				vistos[key(n)] = true
-				ids[p.ID] = n.ID
-				if n.Estado != EstCancelado {
-					id := n.ID
-					orden := n.Orden
-					*n = *p
-					n.ID, n.Orden = id, orden
-				}
-			}
-		}
-		for _, p := range s.E.Turnos {
-			if p.Manual && !vistos[key(p)] {
-				nuevos = append(nuevos, p)
-				ids[p.ID] = p.ID
-			}
-		}
-		ll := s.E.Llamados[:0]
-		for _, l := range s.E.Llamados {
-			if nid, ok := ids[l.TurnoID]; ok {
-				l.TurnoID = nid
-				ll = append(ll, l)
-			}
-		}
-		s.E.Llamados = ll
-	} else {
-		s.E.Llamados = nil
-	}
-	ordenar(nuevos)
-	s.E.Turnos = nuevos
-	s.E.Fecha = fechaArchivo
-	if s.E.Fecha == "" {
-		s.E.Fecha = hoy()
-	}
-	s.E.CargadoDia = hoy()
-	s.E.Archivo = archivo
-	s.guardar()
 }
 
 func (s *Store) SetPC(pc string, f func(c *PCConf)) {

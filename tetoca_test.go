@@ -169,7 +169,7 @@ func TestImportarCSVConAcentosRotos(t *testing.T) {
 func TestFlujoMesaCaja(t *testing.T) {
 	store = NewStore(t.TempDir())
 	ts, _, _ := Importar([]byte(xlsPrueba))
-	store.Cargar(ts, "28/09/2026", "x.xls")
+	store.Cargar(ts, "28/09/2026", "x.xls", "1")
 	if err := store.Accion("mesa_siguiente", "m1", ""); err != nil {
 		t.Fatal(err)
 	}
@@ -197,7 +197,7 @@ func TestFlujoMesaCaja(t *testing.T) {
 	// recargar el mismo día conserva estados
 	ts2, _, _ := Importar([]byte(xlsPrueba))
 	store.E.CargadoDia = hoy()
-	store.Cargar(ts2, "28/09/2026", "x.xls")
+	store.Cargar(ts2, "28/09/2026", "x.xls", "1")
 	cuenta := map[string]int{}
 	for _, t := range store.E.Turnos {
 		cuenta[t.Estado]++
@@ -277,5 +277,51 @@ func TestPedidoLocal(t *testing.T) {
 		if pedidoLocal(c.r) != c.ok {
 			t.Errorf("caso %d: esperaba %v", i, c.ok)
 		}
+	}
+}
+
+func TestDosRegistros(t *testing.T) {
+	store = NewStore(t.TempDir())
+	mk := func(h, pre, nom, tr string) *Turno {
+		return &Turno{Hora: h, Precarga: pre, Nombre: nom, Tramite: tr, Estado: EstPendiente}
+	}
+	r1 := []*Turno{mk("09:00", "100", "GÓMEZ, JUAN PABLO", "Transferencia"), mk("09:20", "101", "SOSA, ANA", "Consulta"),
+		mk("10:00", "102", "GOMEZ, JUAN PABLO", "Inscripción")}
+	r2 := []*Turno{mk("08:40", "200", "Gomez Juan Pablo", "Legajo"), mk("09:10", "201", "RÍOS, VALENTINA", "Retiro")}
+	store.Cargar(r1, "", "a.xls", "1")
+	if len(store.E.Turnos) != 2 {
+		t.Fatalf("mismo nombre en un registro no se juntó: %d filas", len(store.E.Turnos))
+	}
+	if err := store.Accion("mesa_siguiente", "m1", ""); err != nil {
+		t.Fatal(err)
+	}
+	store.Cargar(r2, "", "b.xls", "2")
+	if len(store.E.Turnos) != 3 {
+		t.Fatalf("esperaba 3 personas, hay %d", len(store.E.Turnos))
+	}
+	g := store.E.Turnos[0]
+	if normNombre(g.Nombre) != normNombre("JUAN PABLO GOMEZ") || len(g.Tramites) != 3 || g.Hora != "08:40" || len(g.Registros) != 2 {
+		t.Fatalf("no juntó al gestor: %+v", g)
+	}
+	if g.Estado != EstMesa || g.PC != "m1" {
+		t.Fatalf("se perdió que estaba en mesa: %s %s", g.Estado, g.PC)
+	}
+	if len(store.E.Llamados) != 1 || store.E.Llamados[0].TurnoID != g.ID {
+		t.Fatal("el llamado quedó apuntando a otro lado")
+	}
+	if err := store.Separar(g.ID); err != nil {
+		t.Fatal(err)
+	}
+	if len(store.E.Turnos) != 5 {
+		t.Fatalf("separar: esperaba 5 filas, hay %d", len(store.E.Turnos))
+	}
+	if a := store.actualDe("m1"); a == nil || a.Precarga != "200" {
+		t.Fatal("al separar, la atención tenía que seguir con el primer trámite")
+	}
+	// al otro día la lista vieja se borra sola
+	store.E.CargadoDia = "01/01/2000"
+	store.limpiarSiOtroDia()
+	if len(store.E.Turnos) != 0 || len(store.E.Fuentes) != 0 {
+		t.Fatal("no borró la lista del día anterior")
 	}
 }

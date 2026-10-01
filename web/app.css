@@ -213,3 +213,16 @@ body.t-argentina.oscuro .rol.config{background:#23406B}
 .tema .mini .a i{display:block;height:6px;border-radius:3px}
 .tema .mini .l{width:40%;border-radius:5px}
 .tema b{font-size:14px}.tema small{color:var(--muted);font-size:12px;line-height:1.35}
+
+/* dos registros y varios trámites por persona */
+.rg{display:inline-block;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;margin-right:6px;vertical-align:1px;white-space:nowrap;letter-spacing:.02em}
+.rg.r1{background:var(--mesaBg);color:var(--mesaFg)}
+.rg.r2{background:var(--okBg);color:var(--okFg)}
+.trs{background:var(--sub);border-radius:12px;overflow:hidden;font-size:13px}
+.trh,.trf{display:grid;grid-template-columns:52px 92px minmax(0,1fr) 84px;gap:8px;align-items:center;padding:7px 12px}
+.trh{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em}
+.trf{border-top:1px solid var(--line2)}
+.trf .tt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;text-align:left}
+.slot .rg{font-size:14px;padding:6px 10px}
+.slot b{display:block}.slot small{display:block;color:var(--muted);font-size:13px;margin-top:2px}.slot small.ok{color:var(--okFg);font-weight:700}
