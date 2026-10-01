@@ -15,7 +15,7 @@ def nota(buf, t, f, dur, vol, arm=((1, 1),), forma='sine', ataque=0.008):
     n = int(dur * SR)
     i0 = int(t * SR)
     x = np.arange(n) / SR
-    env = np.exp(-x * (5.0 / dur))                      # se apaga natural
+    env = np.exp(-x * (3.2 / dur))                      # se apaga natural
     env *= np.minimum(1, x / ataque)                    # ataque suave, sin "click"
     env *= np.minimum(1, (dur - x) / 0.03).clip(0, 1)   # cierre suave
     s = np.zeros(n)
@@ -41,10 +41,26 @@ def sala(buf):
     wet = np.convolve(buf, ir)[: len(buf)]
     return buf + 0.9 * wet
 
+def comprimir(buf, umbral=0.06, ratio=8.0):
+    # compresor suave: sube el volumen percibido sin distorsionar
+    # (los parlantes de los televisores son chicos y la sala tiene ruido)
+    env = np.abs(buf)
+    a, r = np.exp(-1 / (0.004 * SR)), np.exp(-1 / (0.25 * SR))
+    seg = np.empty_like(env)
+    e = 0.0
+    for i, v in enumerate(env):
+        e = (a if v > e else r) * e + (1 - (a if v > e else r)) * v
+        seg[i] = e
+    g = np.ones_like(seg)
+    m = seg > umbral
+    g[m] = (umbral + (seg[m] - umbral) / ratio) / seg[m]
+    return buf * g
+
 def guardar(nombre, buf):
     buf = sala(buf)
-    pico = np.abs(buf).max()
-    buf = buf / pico * 0.70                              # deja margen: nunca satura
+    buf = buf / np.abs(buf).max()
+    buf = comprimir(buf)
+    buf = buf / np.abs(buf).max() * 0.97                 # bien fuerte, sin llegar a saturar
     fade = int(0.05 * SR)
     buf[-fade:] *= np.linspace(1, 0, fade)
     wav = os.path.join(OUT, nombre + '.wav')
@@ -52,7 +68,10 @@ def guardar(nombre, buf):
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
         w.writeframes((buf * 32767).astype('<i2').tobytes())
     mp3 = os.path.join(OUT, nombre + '.mp3')
-    subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-codec:a', 'libmp3lame', '-b:a', '128k', mp3], check=True)
+    subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav,
+                    # volumen alto y parejo entre los seis sonidos, con limitador para no saturar
+                    '-af', 'acompressor=threshold=-24dB:ratio=6:attack=2:release=200:makeup=6,alimiter=limit=0.89:attack=1:release=50,loudnorm=I=-9:TP=-0.8:LRA=5',
+                    '-ar', '44100', '-codec:a', 'libmp3lame', '-b:a', '128k', mp3], check=True)
     os.remove(wav)
 
 def vacio(seg):
