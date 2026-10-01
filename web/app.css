@@ -25,7 +25,7 @@ button:disabled{opacity:.45;cursor:default}
 .marca .org{font-family:"Montserrat",Arial,sans-serif;font-size:24px;font-weight:700;letter-spacing:-.01em;line-height:1}
 .sep{width:1px;height:26px;background:#2A3752}
 .app{font-size:18px;font-weight:800}
-.rol{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px}
+.rol{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;white-space:nowrap}
 .rol.mesa{background:#2F6FDB;color:#fff}.rol.caja{background:#FFC857;color:#16181D}.rol.config{background:#2A3752;color:#fff}
 .esp{flex:1}
 .con{display:flex;align-items:center;gap:8px;font-size:13px;color:#B8C3D6}
@@ -152,6 +152,13 @@ body.oscuro .sw{background:#34415C}
 .opcion{width:300px;border:2px solid var(--line);background:var(--card);border-radius:24px;padding:30px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
 .opcion:hover{border-color:#2F6FDB}
 .opcion b{font-size:22px}.opcion span{color:var(--muted);line-height:1.4}
+
+/* pantallas medianas (1366 de ancho, la más común en PC de oficina) */
+@media (max-width:1500px){
+  .con .lbl,.hora .lbl{display:none}
+  .seg button{padding:6px 6px;font-size:12px}
+  .buscar{min-width:110px}
+}
 
 /* pantallas chicas (PC viejas, 1024 o 1280 de ancho) */
 @media (max-width:1300px){
