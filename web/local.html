@@ -161,9 +161,8 @@ button.rojo{background:#fff;color:#A2332A;border:1px solid #EBC7C3;border-radius
         document.getElementById('bNo').onclick = function () { vistaInstalacion(); };
         document.getElementById('bSi').onclick = function () {
           c.innerHTML = '<div class="spin"></div><p>Desinstalando…</p>';
-          post('/local/instalacion', { accion: 'desinstalar' }).then(function () {
-            c.innerHTML = '<h1>TeToca se desinstaló</h1><p>Los archivos se borran solos cuando se cierra esta ventana.</p>';
-            setTimeout(function () { window.close(); }, 4000);
+          post('/local/instalacion', { accion: 'desinstalar' }).then(function (r) {
+            c.innerHTML = '<h1>TeToca se desinstaló</h1><p>Ya no arranca con Windows y se borraron la lista y la configuración. Para terminar, cerrá esta ventana y borrá la carpeta <b>' + esc(r.carpeta || 'TeToca') + '</b> (se abre sola).</p>';
           }).catch(function (er) { vistaInstalacion('<p class="err">' + esc(er.message) + '</p>'); });
         };
       };

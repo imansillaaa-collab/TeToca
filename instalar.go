@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -123,11 +122,12 @@ func instalar(copiarDatos bool) (destExe string, errRed error, err error) {
 	return destExe, errRed, nil
 }
 
-// desinstalar saca el arranque automático y el permiso de red, y deja un proceso
-// aparte que borra los archivos cuando este se cierra.
-func desinstalar() error {
+// desinstalar saca el arranque automático, el acceso directo y el permiso de red,
+// y borra la lista y la configuración. El programa en sí no se puede borrar mientras
+// está abierto: la carpeta la borra la persona después (se abre sola).
+func desinstalar() (string, error) {
 	if carpetaInstalacion() == "" {
-		return UserErr{"La desinstalación solo está disponible en Windows."}
+		return "", UserErr{"La desinstalación solo está disponible en Windows."}
 	}
 	exe := rutaExe()
 	_ = quitarInicio()
@@ -137,42 +137,11 @@ func desinstalar() error {
 			logf("desinstalar: quitar permiso de red: %v", err)
 		}
 	}
-	tmp := filepath.Join(os.TempDir(), "TeToca-desinstalar.exe")
-	if err := copiarArchivo(exe, tmp); err != nil {
-		return err
+	for _, f := range []string{"turnos.json", "config.json", "esta-pc.json", "logo.png"} {
+		_ = os.Remove(filepath.Join(datos, f))
 	}
-	cmd := exec.Command(tmp, "--borrar", filepath.Dir(exe))
-	sinConsola(cmd)
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	logf("desinstalado; se borran los archivos de %s", filepath.Dir(exe))
-	return nil
-}
-
-// borrarInstalacion corre desde una copia temporal: espera que TeToca se cierre y
-// borra solo sus propios archivos (nunca otra cosa que haya en la carpeta).
-func borrarInstalacion(dir string) {
-	nombres := []string{"TeToca.exe", "TeToca.anterior.exe", "TeToca.nuevo.exe", "TeToca.cambio.exe", "datos"}
-	for i := 0; i < 90; i++ {
-		time.Sleep(2 * time.Second)
-		quedan := false
-		for _, n := range nombres {
-			p := filepath.Join(dir, n)
-			if _, err := os.Stat(p); err == nil {
-				if os.RemoveAll(p) != nil {
-					quedan = true
-				}
-				if _, err := os.Stat(p); err == nil {
-					quedan = true
-				}
-			}
-		}
-		if !quedan {
-			_ = os.Remove(dir) // solo si quedó vacía
-			return
-		}
-	}
+	logf("desinstalado; queda borrar la carpeta %s", filepath.Dir(exe))
+	return filepath.Dir(exe), nil
 }
 
 // Protección: solo aceptamos pedidos que vengan de las páginas de TeToca en esta
@@ -230,13 +199,15 @@ func manejarInstalacion(w http.ResponseWriter, r *http.Request, reiniciarDesde f
 			go reiniciarDesde(destExe)
 		}
 	case "desinstalar":
-		if err := desinstalar(); err != nil {
+		dir, err := desinstalar()
+		if err != nil {
 			jsonErr(w, err)
 			return
 		}
-		jsonOK(w, nil)
+		jsonOK(w, map[string]interface{}{"ok": true, "carpeta": dir})
 		go func() {
 			time.Sleep(1500 * time.Millisecond)
+			abrirCarpeta(filepath.Dir(dir))
 			logf("cerrado por desinstalación")
 			os.Exit(0)
 		}()

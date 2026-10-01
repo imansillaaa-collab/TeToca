@@ -10,8 +10,14 @@ if ! "$GO" version | grep -q "go1.20"; then
   echo "Necesitás Go 1.20.x para que ande en Windows 7 (tenés: $($GO version))." >&2
   exit 1
 fi
-RSRC="${RSRC:-rsrc}"
-"$RSRC" -ico web/icono.ico -manifest build/tetoca.manifest -arch 386 -o rsrc_windows_386.syso
+# Ícono, manifiesto y datos del programa (nombre, versión, descripción) que muestra
+# Windows en Propiedades. Requiere goversioninfo (github.com/josephspurrier/goversioninfo).
+GVI="${GVI:-goversioninfo}"
+IFS=. read -r MA MI PA <<< "${VERSION}"
+rm -f rsrc_windows_386.syso resource.syso
+"$GVI" -icon web/icono.ico -manifest build/tetoca.manifest \
+  -ver-major "$MA" -ver-minor "$MI" -ver-patch "${PA:-0}" -product-ver-major "$MA" -product-ver-minor "$MI" -product-ver-patch "${PA:-0}" \
+  -file-version "$VERSION" -product-version "$VERSION" -o rsrc_windows_386.syso build/versioninfo.json
 mkdir -p dist
 GOOS=windows GOARCH=386 CGO_ENABLED=0 GOTOOLCHAIN=local "$GO" build -trimpath \
   -ldflags "-H windowsgui -s -w -X main.Version=${VERSION}" -o dist/TeToca.exe .

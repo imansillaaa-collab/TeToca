@@ -127,11 +127,6 @@ func main() {
 		case "--quitar-red":
 			_ = quitarRed(rutaExe())
 			os.Exit(0)
-		case "--borrar":
-			if len(os.Args) > 2 {
-				borrarInstalacion(os.Args[2])
-			}
-			os.Exit(0)
 		}
 	}
 	abrir := tieneFlag("--abrir")

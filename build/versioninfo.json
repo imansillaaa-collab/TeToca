@@ -1,0 +1,21 @@
+{
+  "FixedFileInfo": {
+    "FileVersion": {"Major": 1, "Minor": 0, "Patch": 0, "Build": 0},
+    "ProductVersion": {"Major": 1, "Minor": 0, "Patch": 0, "Build": 0},
+    "FileFlagsMask": "3f", "FileFlags ": "00", "FileOS": "040004", "FileType": "01", "FileSubType": "00"
+  },
+  "StringFileInfo": {
+    "Comments": "Turnero para salas de espera",
+    "CompanyName": "TeToca",
+    "FileDescription": "TeToca - turnero para sala de espera",
+    "FileVersion": "1.0.0",
+    "InternalName": "TeToca",
+    "LegalCopyright": "TeToca",
+    "OriginalFilename": "TeToca.exe",
+    "ProductName": "TeToca",
+    "ProductVersion": "1.0.0"
+  },
+  "VarFileInfo": {"Translation": {"LangID": "0C0A", "CharsetID": "04B0"}},
+  "IconPath": "",
+  "ManifestPath": ""
+}

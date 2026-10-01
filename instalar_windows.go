@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -162,22 +163,70 @@ func elevar(exe, args string) error {
 }
 
 // Acceso directo en el Escritorio, para volver a abrir TeToca si alguien lo cierra.
-// PowerShell existe desde Windows 7 y crea el acceso directo sin pedir permisos.
-func psComillas(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" }
+// Se crea con el componente de Windows para accesos directos (IShellLink), igual
+// que lo hacen los instaladores comunes.
+var (
+	clsidShellLink  = windows.GUID{Data1: 0x00021401, Data4: [8]byte{0xC0, 0, 0, 0, 0, 0, 0, 0x46}}
+	iidIShellLinkW  = windows.GUID{Data1: 0x000214F9, Data4: [8]byte{0xC0, 0, 0, 0, 0, 0, 0, 0x46}}
+	iidIPersistFile = windows.GUID{Data1: 0x0000010B, Data4: [8]byte{0xC0, 0, 0, 0, 0, 0, 0, 0x46}}
+	ole32           = windows.NewLazySystemDLL("ole32.dll")
+	coCreate        = ole32.NewProc("CoCreateInstance")
+)
+
+func metodo(obj uintptr, n int, args ...uintptr) uintptr {
+	vtbl := *(*uintptr)(unsafe.Pointer(obj))
+	fn := *(*uintptr)(unsafe.Pointer(vtbl + uintptr(n)*unsafe.Sizeof(uintptr(0))))
+	r, _, _ := syscall.SyscallN(fn, append([]uintptr{obj}, args...)...)
+	return r
+}
+
+func rutaAccesoDirecto() (string, error) {
+	esc, err := windows.KnownFolderPath(windows.FOLDERID_Desktop, 0)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(esc, "TeToca.lnk"), nil
+}
 
 func crearAccesoDirecto(exe string) error {
-	script := "$d=[Environment]::GetFolderPath('Desktop');" +
-		"$s=(New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $d 'TeToca.lnk'));" +
-		"$s.TargetPath=" + psComillas(exe) + ";$s.WorkingDirectory=" + psComillas(filepath.Dir(exe)) + ";" +
-		"$s.IconLocation=" + psComillas(exe+",0") + ";$s.Description='TeToca';$s.Save()"
-	cmd := exec.Command("powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", script)
-	sinConsola(cmd)
-	return cmd.Run()
+	lnk, err := rutaAccesoDirecto()
+	if err != nil {
+		return err
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	if err := windows.CoInitializeEx(0, windows.COINIT_APARTMENTTHREADED); err == nil {
+		defer windows.CoUninitialize()
+	}
+	var sl uintptr
+	if r, _, _ := coCreate.Call(uintptr(unsafe.Pointer(&clsidShellLink)), 0, 1 /*CLSCTX_INPROC_SERVER*/, uintptr(unsafe.Pointer(&iidIShellLinkW)), uintptr(unsafe.Pointer(&sl))); r != 0 {
+		return fmt.Errorf("CoCreateInstance 0x%x", r)
+	}
+	defer metodo(sl, 2)  // Release
+	var vivos [][]uint16 // mantiene vivas las cadenas mientras Windows las usa
+	defer runtime.KeepAlive(&vivos)
+	p := func(s string) uintptr {
+		u, _ := windows.UTF16FromString(s)
+		vivos = append(vivos, u)
+		return uintptr(unsafe.Pointer(&u[0]))
+	}
+	metodo(sl, 20, p(exe))              // SetPath
+	metodo(sl, 9, p(filepath.Dir(exe))) // SetWorkingDirectory
+	metodo(sl, 7, p("TeToca"))          // SetDescription
+	metodo(sl, 17, p(exe), 0)           // SetIconLocation
+	var pf uintptr
+	if r := metodo(sl, 0, uintptr(unsafe.Pointer(&iidIPersistFile)), uintptr(unsafe.Pointer(&pf))); r != 0 {
+		return fmt.Errorf("IPersistFile 0x%x", r)
+	}
+	defer metodo(pf, 2)
+	if r := metodo(pf, 6, p(lnk), 1); r != 0 { // Save
+		return fmt.Errorf("guardar acceso directo 0x%x", r)
+	}
+	return nil
 }
 
 func quitarAccesoDirecto() {
-	cmd := exec.Command("powershell", "-NoProfile", "-NonInteractive", "-Command",
-		"Remove-Item -ErrorAction SilentlyContinue (Join-Path ([Environment]::GetFolderPath('Desktop')) 'TeToca.lnk')")
-	sinConsola(cmd)
-	_ = cmd.Run()
+	if lnk, err := rutaAccesoDirecto(); err == nil {
+		_ = os.Remove(lnk)
+	}
 }
