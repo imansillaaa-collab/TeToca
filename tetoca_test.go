@@ -286,21 +286,21 @@ func TestDosRegistros(t *testing.T) {
 		return &Turno{Hora: h, Precarga: pre, Nombre: nom, Tramite: tr, Estado: EstPendiente}
 	}
 	r1 := []*Turno{mk("09:00", "100", "GÓMEZ, JUAN PABLO", "Transferencia"), mk("09:20", "101", "SOSA, ANA", "Consulta"),
-		mk("10:00", "102", "GOMEZ, JUAN PABLO", "Inscripción")}
-	r2 := []*Turno{mk("08:40", "200", "Gomez Juan Pablo", "Legajo"), mk("09:10", "201", "RÍOS, VALENTINA", "Retiro")}
+		mk("09:00", "102", "GOMEZ, JUAN PABLO", "Inscripción"), mk("11:00", "103", "GOMEZ, JUAN PABLO", "Otro horario")}
+	r2 := []*Turno{mk("09:00", "200", "Gomez Juan Pablo", "Legajo"), mk("09:10", "201", "RÍOS, VALENTINA", "Retiro")}
 	store.Cargar(r1, "", "a.xls", "1")
-	if len(store.E.Turnos) != 2 {
-		t.Fatalf("mismo nombre en un registro no se juntó: %d filas", len(store.E.Turnos))
+	if len(store.E.Turnos) != 3 {
+		t.Fatalf("mismo nombre y horario no se juntó (u otro horario sí): %d filas", len(store.E.Turnos))
 	}
 	if err := store.Accion("mesa_siguiente", "m1", ""); err != nil {
 		t.Fatal(err)
 	}
 	store.Cargar(r2, "", "b.xls", "2")
-	if len(store.E.Turnos) != 3 {
-		t.Fatalf("esperaba 3 personas, hay %d", len(store.E.Turnos))
+	if len(store.E.Turnos) != 4 {
+		t.Fatalf("esperaba 4 filas, hay %d", len(store.E.Turnos))
 	}
 	g := store.E.Turnos[0]
-	if normNombre(g.Nombre) != normNombre("JUAN PABLO GOMEZ") || len(g.Tramites) != 3 || g.Hora != "08:40" || len(g.Registros) != 2 {
+	if normNombre(g.Nombre) != normNombre("JUAN PABLO GOMEZ") || len(g.Tramites) != 3 || g.Hora != "09:00" || len(g.Registros) != 2 {
 		t.Fatalf("no juntó al gestor: %+v", g)
 	}
 	if g.Estado != EstMesa || g.PC != "m1" {
@@ -312,10 +312,10 @@ func TestDosRegistros(t *testing.T) {
 	if err := store.Separar(g.ID); err != nil {
 		t.Fatal(err)
 	}
-	if len(store.E.Turnos) != 5 {
-		t.Fatalf("separar: esperaba 5 filas, hay %d", len(store.E.Turnos))
+	if len(store.E.Turnos) != 6 {
+		t.Fatalf("separar: esperaba 6 filas, hay %d", len(store.E.Turnos))
 	}
-	if a := store.actualDe("m1"); a == nil || a.Precarga != "200" {
+	if a := store.actualDe("m1"); a == nil || a.Precarga != "100" {
 		t.Fatal("al separar, la atención tenía que seguir con el primer trámite")
 	}
 	// al otro día la lista vieja se borra sola

@@ -112,7 +112,7 @@ func (s *Store) Separar(id string) error {
 		s.E.Separados = map[string]bool{}
 	}
 	nk := normNombre(t.Nombre)
-	s.E.Separados[nk] = true
+	s.E.Separados[nk+"@"+t.Hora] = true
 	// lo que estaba pasando con la fila (por ejemplo, en mesa) sigue con su primer trámite
 	pri := t.Tramites[0]
 	s.rearmar(map[string]*Turno{claveSeparada(pri.Registro, pri.Precarga, nk): t})
@@ -149,8 +149,11 @@ func (s *Store) rearmar(traspaso map[string]*Turno) {
 				cancelados = append(cancelados, &c)
 				continue
 			}
-			clave := "n:" + nk
-			if s.E.Separados[nk] || nk == "" {
+			// se juntan solo si coinciden nombre Y horario: un gestor con turnos en
+			// horarios distintos sigue apareciendo una vez por cada horario
+			gk := nk + "@" + t.Hora
+			clave := "n:" + gk
+			if s.E.Separados[gk] || nk == "" {
 				clave = claveSeparada(r, t.Precarga, nk)
 			}
 			g := grupos[clave]
@@ -172,7 +175,7 @@ func (s *Store) rearmar(traspaso map[string]*Turno) {
 		}
 		k := t.Clave
 		if k == "" {
-			k = "n:" + normNombre(t.Nombre)
+			k = "n:" + normNombre(t.Nombre) + "@" + t.Hora
 		}
 		if p, ok := prev[k]; !ok || (p.Estado == EstPendiente && t.Estado != EstPendiente) {
 			prev[k] = t

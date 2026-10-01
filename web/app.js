@@ -113,7 +113,7 @@
         return `<div class="slot">${chipReg(id)}<div style="flex:1;min-width:0">${f ? `<b>${esc(f.archivo)}</b><small class="ok">✓ ${f.cantidad} turnos cargados a las ${hhmm(f.cargado)}</small>` : '<b>Sin cargar</b><small>Todavía no se cargó el archivo de este registro.</small>'}</div>
           <button class="btn" data-cargar="${id}" style="${f ? '' : 'background:#2F6FDB;color:#fff;border:0;'}padding:0 14px">${f ? 'Cambiar' : 'Elegir archivo'}</button></div>`;
       }).join('') +
-      (juntos ? `<div class="nota" style="margin:0;background:var(--hl);color:var(--ink);border-radius:12px;padding:12px 14px"><strong>${juntos} ${juntos === 1 ? 'persona tiene' : 'personas tienen'} más de un turno</strong> (casi siempre gestores): quedaron en una sola fila cada una, con todos sus trámites.</div>` : '') +
+      (juntos ? `<div class="nota" style="margin:0;background:var(--hl);color:var(--ink);border-radius:12px;padding:12px 14px"><strong>${juntos} ${juntos === 1 ? 'persona tiene' : 'personas tienen'} más de un turno en el mismo horario</strong> (casi siempre gestores): quedaron en una sola fila, con todos sus trámites.</div>` : '') +
       `<button class="btn" id="mSi" style="background:#2F6FDB;color:#fff;border:0">Listo</button>`);
     document.querySelectorAll('[data-cargar]').forEach((b) => { b.onclick = () => { cargaReg = b.dataset.cargar; $('archivo').click(); }; });
     $('mSi').onclick = () => modal('');
@@ -477,7 +477,7 @@
           <div style="display:flex;gap:10px;margin-top:14px"><button class="btn" style="background:#2F6FDB;color:#fff;border:0;padding:0 18px" id="cCargar">${I.subir} Cargar turnos del día (XLS)</button><button class="btn" style="padding:0 18px" id="cManual">+ Agregar a mano</button></div>
           <div class="campo"><label>Registros</label><div class="segc"><button data-nreg="1" class="${dosReg() ? '' : 'on'}">Uno</button><button data-nreg="2" class="${dosReg() ? 'on' : ''}">Dos, en la misma mesa</button></div></div>
           ${dosReg() ? `<div class="campo"><label for="cReg1">Nombres</label><input type="text" id="cReg1" value="${esc(nomReg(1))}" style="max-width:150px" placeholder="R1"><input type="text" id="cReg2" value="${esc(nomReg(2))}" style="max-width:150px" placeholder="R2"></div>` : ''}
-          <p class="nota">Si volvés a cargar el archivo el mismo día (por ejemplo con turnos nuevos), no se pierde quién ya fue atendido. Si una persona tiene varios turnos (aunque sean de registros distintos), aparece una sola vez con todos sus trámites. Al día siguiente la lista vieja se borra sola.</p></div>
+          <p class="nota">Si volvés a cargar el archivo el mismo día (por ejemplo con turnos nuevos), no se pierde quién ya fue atendido. Si una persona tiene más de un turno en el mismo horario (aunque sean de registros distintos), aparece una sola vez con todos sus trámites; en horarios distintos, aparece una vez por horario. Al día siguiente la lista vieja se borra sola.</p></div>
         <div class="card pad"><h2>Actualizaciones</h2><p class="s">Versión instalada: <strong style="color:var(--ink)">${esc(V.version)}</strong>${u.disponible ? ` · disponible: <strong style="color:var(--ink)">${esc(u.version)}</strong>` : ' · está al día'}</p>
           <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="btn" style="padding:0 18px" id="cBuscarUpd">Buscar actualizaciones</button>
           ${u.disponible ? '<button class="btn" style="background:#1E54B0;color:#fff;border:0;padding:0 18px" id="cAplicar">Actualizar ahora</button>' : ''}
