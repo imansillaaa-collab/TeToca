@@ -249,3 +249,33 @@ func TestActualizacion(t *testing.T) {
 		t.Fatal("ofreció actualizar a la misma versión")
 	}
 }
+
+func TestPedidoLocal(t *testing.T) {
+	mk := func(remote, metodo, tipo, origen string) *http.Request {
+		r := httptest.NewRequest(metodo, "/local/instalacion", strings.NewReader("{}"))
+		r.RemoteAddr = remote
+		if tipo != "" {
+			r.Header.Set("Content-Type", tipo)
+		}
+		if origen != "" {
+			r.Header.Set("Origin", origen)
+		}
+		return r
+	}
+	casos := []struct {
+		r  *http.Request
+		ok bool
+	}{
+		{mk("127.0.0.1:5000", "GET", "", ""), true},
+		{mk("192.168.0.5:5000", "GET", "", ""), false},
+		{mk("127.0.0.1:5000", "POST", "application/json", "http://127.0.0.1:8767"), true},
+		{mk("127.0.0.1:5000", "POST", "text/plain", ""), false},
+		{mk("127.0.0.1:5000", "POST", "application/json", "http://malo.com"), false},
+		{mk("127.0.0.1:5000", "POST", "application/json", "http://192.168.0.10:8765"), false},
+	}
+	for i, c := range casos {
+		if pedidoLocal(c.r) != c.ok {
+			t.Errorf("caso %d: esperaba %v", i, c.ok)
+		}
+	}
+}

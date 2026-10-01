@@ -106,12 +106,37 @@ func liberarPuerto() {
 	}
 }
 
-func main() {
-	reinicio := len(os.Args) > 1 && os.Args[1] == "--reinicio"
-	abrir := len(os.Args) > 1 && os.Args[1] == "--abrir"
-	if abrir {
-		reinicio = true
+func tieneFlag(f string) bool {
+	for _, a := range os.Args[1:] {
+		if a == f {
+			return true
+		}
 	}
+	return false
+}
+
+func main() {
+	// Tareas sueltas que se corren aparte (como administrador o desde una copia temporal).
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "--permiso-red":
+			if err := permisoRed(rutaExe()); err != nil {
+				os.Exit(1)
+			}
+			os.Exit(0)
+		case "--quitar-red":
+			_ = quitarRed(rutaExe())
+			os.Exit(0)
+		case "--borrar":
+			if len(os.Args) > 2 {
+				borrarInstalacion(os.Args[2])
+			}
+			os.Exit(0)
+		}
+	}
+	abrir := tieneFlag("--abrir")
+	reinicio := abrir || tieneFlag("--reinicio")
+	ventana := !tieneFlag("--sinventana")
 	prepararCarpetas()
 	leerJSON(rutaLocal(), &local)
 	if local.PC == "" {
@@ -125,7 +150,7 @@ func main() {
 	if local.Modo == "central" {
 		modoCentral(reinicio, abrir)
 	} else {
-		modoPuesto(reinicio)
+		modoPuesto(reinicio, ventana)
 	}
 }
 
@@ -145,6 +170,16 @@ func modoCentral(reinicio, abrir bool) {
 	prevenirSuspension()
 	mux := http.NewServeMux()
 	rutasCentral(mux, datos)
+	mux.HandleFunc("/local/instalacion", func(w http.ResponseWriter, r *http.Request) {
+		manejarInstalacion(w, r, func(exe string) { _ = reiniciarCon(exe, "--reinicio") })
+	})
+	mux.HandleFunc("/instalacion", func(w http.ResponseWriter, r *http.Request) {
+		if !pedidoLocal(r) {
+			http.Error(w, "La instalación se maneja desde la PC central.", http.StatusForbidden)
+			return
+		}
+		servirArchivo(w, "local.html", "text/html; charset=utf-8")
+	})
 	go func() { _ = http.Serve(l, mux) }()
 	go responderDescubrimiento()
 	go caster.Loop()
@@ -164,7 +199,7 @@ func modoCentral(reinicio, abrir bool) {
 // Puesto (o primera vez): una pequeña página local que busca la central
 // y lleva a la pantalla de mesa o caja.
 
-func modoPuesto(reinicio bool) {
+func modoPuesto(reinicio, ventana bool) {
 	l, err := escuchar(fmt.Sprintf("127.0.0.1:%d", PuertoLocal), reinicio)
 	url := fmt.Sprintf("http://127.0.0.1:%d/", PuertoLocal)
 	if err != nil {
@@ -175,10 +210,13 @@ func modoPuesto(reinicio bool) {
 	mux := http.NewServeMux()
 	rutasLocal(mux)
 	go func() { _ = http.Serve(l, mux) }()
-	go func() { time.Sleep(300 * time.Millisecond); abrirVentana(url) }()
+	if ventana {
+		go func() { time.Sleep(300 * time.Millisecond); abrirVentana(url) }()
+	}
 	titulo := "TeToca"
 	if local.Modo == "puesto" {
 		titulo = "TeToca · Puesto"
+		go actualizarPuesto()
 	}
 	bandeja(titulo, []itemBandeja{
 		{"Abrir TeToca", func() { abrirVentana(url) }},
@@ -227,7 +265,11 @@ func rutasLocal(mux *http.ServeMux) {
 	mux.HandleFunc("/local/estado", func(w http.ResponseWriter, r *http.Request) {
 		localMu.Lock()
 		defer localMu.Unlock()
-		jsonOK(w, map[string]interface{}{"local": local, "version": Version, "ips": ipsLocales()})
+		l := local
+		localMu.Unlock()
+		inst := estadoInstalacion()
+		localMu.Lock()
+		jsonOK(w, map[string]interface{}{"local": l, "version": Version, "ips": ipsLocales(), "inst": inst})
 	})
 	mux.HandleFunc("/local/buscar", func(w http.ResponseWriter, r *http.Request) {
 		jsonOK(w, BuscarCentrales(2*time.Second))
@@ -262,8 +304,18 @@ func rutasLocal(mux *http.ServeMux) {
 		}
 		jsonOK(w, map[string]string{"url": fmt.Sprintf("http://%s:%d/?pc=%s&puesto=1", ip, Puerto, urlq(l.PC))})
 	})
+	mux.HandleFunc("/local/instalacion", func(w http.ResponseWriter, r *http.Request) {
+		manejarInstalacion(w, r, func(exe string) { _ = reiniciarCon(exe, "--reinicio", "--sinventana") })
+	})
 	mux.HandleFunc("/local/elegir", func(w http.ResponseWriter, r *http.Request) {
-		var q struct{ Modo, IP, Host, PC string }
+		if !pedidoLocal(r) {
+			http.Error(w, "no permitido", http.StatusForbidden)
+			return
+		}
+		var q struct {
+			Modo, IP, Host, PC string
+			Instalar           bool
+		}
 		if err := leerBody(r, &q); err != nil {
 			jsonErr(w, err)
 			return
@@ -283,6 +335,19 @@ func rutasLocal(mux *http.ServeMux) {
 			local.CentralIP, local.CentralHost = q.IP, q.Host
 		}
 		localMu.Unlock()
+		if q.Instalar && carpetaInstalacion() != "" {
+			destExe, errRed, err := instalar(false)
+			if err == nil {
+				jsonOK(w, map[string]interface{}{"ok": true, "instalado": true, "carpeta": filepath.Dir(destExe), "red": errRed == nil})
+				flag := "--reinicio"
+				if q.Modo == "central" {
+					flag = "--abrir"
+				}
+				go func() { time.Sleep(500 * time.Millisecond); _ = reiniciarCon(destExe, flag) }()
+				return
+			}
+			logf("no se pudo instalar, sigo sin instalar: %v", err)
+		}
 		guardarLocal()
 		jsonOK(w, nil)
 		if q.Modo == "central" {

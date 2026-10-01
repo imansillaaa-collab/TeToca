@@ -219,6 +219,16 @@ func descargarVerificado(url, esperado string) ([]byte, error) {
 
 // reemplazarYReiniciar deja la versión actual como "anterior", pone la nueva y reinicia.
 func reemplazarYReiniciar(nuevo []byte) error {
+	if err := reemplazar(nuevo); err != nil {
+		return err
+	}
+	setUpd("reiniciando", "Reiniciando con la versión nueva…")
+	return reiniciar(rutaExe())
+}
+
+// reemplazar cambia el archivo del programa (Windows deja renombrar un exe abierto).
+// La versión nueva se usa la próxima vez que se abra.
+func reemplazar(nuevo []byte) error {
 	actual := rutaExe()
 	dir := filepath.Dir(actual)
 	tmp := filepath.Join(dir, "TeToca.nuevo.exe")
@@ -235,8 +245,33 @@ func reemplazarYReiniciar(nuevo []byte) error {
 		_ = os.Rename(ant, actual)
 		return err
 	}
-	setUpd("reiniciando", "Reiniciando con la versión nueva…")
-	return reiniciar(actual)
+	return nil
+}
+
+// actualizarPuesto: los puestos solo muestran páginas de la central, así que su
+// programa casi no cambia. Igual se mantiene al día solo y sin molestar: baja la
+// versión nueva y la usa la próxima vez que se prenda la PC.
+func actualizarPuesto() {
+	time.Sleep(2 * time.Minute)
+	for {
+		buscarActualizacion()
+		updMu.Lock()
+		disp, ue, uh, v := upd.Disponible, urlExe, urlHash, upd.Version
+		updMu.Unlock()
+		if disp {
+			b, err := descargarVerificado(ue, uh)
+			if err == nil {
+				err = reemplazar(b)
+			}
+			if err != nil {
+				logf("actualizar puesto: %v", err)
+			} else {
+				logf("puesto actualizado a %s (se usa al volver a abrir TeToca)", v)
+				return
+			}
+		}
+		time.Sleep(6 * time.Hour)
+	}
 }
 
 func volverAnterior() error {
@@ -263,12 +298,13 @@ func volverAnterior() error {
 
 func reiniciar(exe string) error { return reiniciarCon(exe, "--reinicio") }
 
-func reiniciarCon(exe, flag string) error {
+func reiniciarCon(exe string, flags ...string) error {
 	time.Sleep(800 * time.Millisecond)
 	liberarPuerto()
-	cmd := exec.Command(exe, flag)
+	cmd := exec.Command(exe, flags...)
 	cmd.Dir = filepath.Dir(exe)
 	if err := cmd.Start(); err != nil {
+		logf("no se pudo reiniciar con %s: %v", exe, err)
 		return err
 	}
 	logf("reiniciando: %s", exe)

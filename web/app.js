@@ -90,6 +90,15 @@
     return `<span class="pill p-${t.estado}">${esc(txt)}</span>`;
   }
 
+  // La instalación la maneja el programa de cada PC: en un puesto, su ayudante local
+  // (127.0.0.1:8767); en la central, la propia central. Desde otra PC no se muestra.
+  function urlInstalacion() {
+    const volver = encodeURIComponent(location.href);
+    if (/[?&]puesto=1/.test(location.search)) return 'http://127.0.0.1:8767/instalacion?volver=' + volver;
+    if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') return '/instalacion?volver=' + volver;
+    return '';
+  }
+
   // ---------- tema ----------
   function aplicarTema() {
     const t = tema || (V && V.config.tema) || 'claro';
@@ -412,6 +421,8 @@
           ${u.disponible ? '<button class="btn" style="background:#1E54B0;color:#fff;border:0;padding:0 18px" id="cAplicar">Actualizar ahora</button>' : ''}
           ${u.hayAnterior ? '<button class="btn rojo" style="padding:0 18px" id="cAnterior">Volver a la versión anterior</button>' : ''}</div>
           <p class="nota">Las actualizaciones se bajan de internet. Los datos de los turnos nunca salen de la oficina.</p></div>
+        ${urlInstalacion() ? `<div class="card pad" style="grid-column:1/-1;display:flex;align-items:center;gap:18px;flex-wrap:wrap"><div style="flex:1;min-width:260px"><h2>Instalación en esta PC</h2><p class="s">Si TeToca está en su carpeta, si se abre solo al prender la PC y si tiene permiso de red. También para desinstalarlo.</p></div>
+          <div style="display:flex;gap:10px"><a class="btn" style="padding:0 18px;text-decoration:none;display:inline-flex;align-items:center" href="${urlInstalacion()}">Instalación de esta PC…</a></div></div>` : ''}
         <div class="card pad" style="grid-column:1/-1"><h2>Tema del televisor</h2><p class="s">Cómo se ve la pantalla de la sala. Se cambia en el momento, sin reconectar el TV.</p>
           <div class="temas">${TEMAS_TV.map(([id, n, d, bg, top, card, txt, acc, pan]) => `<button class="tema ${(c.temaTV || 'noche') === id ? 'on' : ''}" data-temtv="${id}">
             <div class="mini" style="background:${bg};${id === 'contraste' ? 'outline:1px solid #FFE600;outline-offset:-1px' : ''}"><div class="t" style="background:${top};border-bottom:1px solid ${id === 'albiceleste' ? '#74ACDF' : 'rgba(128,128,128,.25)'}"></div>

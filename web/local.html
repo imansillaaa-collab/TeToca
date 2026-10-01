@@ -25,6 +25,14 @@ input{height:42px;border:1px solid #D9D5CC;border-radius:10px;padding:0 12px;fon
 .spin{width:34px;height:34px;border-radius:50%;border:4px solid #E4E1DA;border-top-color:#2F6FDB;animation:g 1s linear infinite}
 @keyframes g{to{transform:rotate(360deg)}}
 .small{font-size:13px;color:#8A8F99}
+.chk{display:flex;gap:12px;align-items:flex-start;text-align:left;background:#fff;border:1px solid #E4E1DA;border-radius:14px;padding:14px 16px;max-width:620px;cursor:pointer}
+.chk input{width:20px;height:20px;margin:2px 0 0;flex-shrink:0}
+.chk div>b{display:block;margin-bottom:3px}.chk span{color:#5E6470;font-size:14px;line-height:1.45}
+.aviso{background:#FFF1D6;color:#6B4700;border-radius:12px;padding:12px 16px;max-width:620px;line-height:1.45;text-align:left}
+.est{display:flex;flex-direction:column;gap:10px;width:520px;max-width:100%}
+.est .c span{margin-left:auto;font-weight:700;font-size:14px}
+.si{color:#1D6B42}.no{color:#A2332A}
+button.rojo{background:#fff;color:#A2332A;border:1px solid #EBC7C3;border-radius:10px;height:40px;padding:0 16px;font:inherit;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -37,25 +45,41 @@ input{height:42px;border:1px solid #D9D5CC;border-radius:10px;padding:0 12px;fon
   function get(u) { return fetch(u).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Error'); return j; }); }); }
   function esc(s) { return String(s || '').replace(/[&<>"]/g, function (x) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[x]; }); }
 
+  var instalar = false;
+
   function inicio() {
+    var inst = L.inst || {};
+    if (inst.soportado && !inicio.visto) instalar = true;
+    inicio.visto = true;
     c.innerHTML = '<div style="display:flex;flex-direction:column;gap:22px;align-items:center"><h1>Bienvenido a TeToca</h1>' +
       '<p>Antes de empezar, contanos qué rol tiene esta computadora. Se hace una sola vez.</p>' +
       '<div class="ops"><button class="op" id="oC"><b>Es la PC central</b><span>La que queda prendida todo el día, guarda la lista de turnos y transmite al televisor. Hay una sola.</span></button>' +
       '<button class="op" id="oP"><b>Es un puesto</b><span>Una PC de mesa de entradas o de caja que se conecta a la central.</span></button></div>' +
+      (inst.soportado ? '<label class="chk"><input type="checkbox" id="inst"' + (instalar ? ' checked' : '') + '><div><b>Instalar TeToca en esta PC (recomendado)</b><span>' +
+        (inst.instalado ? 'Ya está en ' + esc(inst.carpeta) + '. Le pone un acceso directo en el Escritorio, lo deja abriéndose solo al prender la PC' : 'Lo copia a ' + esc(inst.carpeta) + ', le pone un acceso directo en el Escritorio, lo deja abriéndose solo al prender la PC') +
+        ' y, en la central, le da permiso de red. Windows puede preguntar si permitís que haga cambios: tocá <b>Sí</b>.</span></div></label>' : '') +
       '<p class="small">Nombre de esta PC: ' + esc(L.local.pc) + '</p></div>';
+    var ch = document.getElementById('inst');
+    if (ch) ch.onchange = function () { instalar = ch.checked; };
     document.getElementById('oC').onclick = function () {
-      c.innerHTML = '<div class="spin"></div><p>Preparando la PC central…</p>';
-      post('/local/elegir', { modo: 'central' }).then(esperarCentral).catch(function (e) { c.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+      c.innerHTML = '<div class="spin"></div><p>' + (instalar ? 'Instalando TeToca y preparando la PC central…<br><br><b>Si Windows pregunta si permitís que TeToca haga cambios, tocá Sí.</b>' : 'Preparando la PC central…') + '</p>';
+      post('/local/elegir', { modo: 'central', instalar: instalar }).then(esperarCentral).catch(function (e) { c.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
     };
     document.getElementById('oP').onclick = buscar;
   }
 
-  function esperarCentral() {
+  function avisoRed(r) {
+    if (!r || !r.instalado || r.red !== false) return '';
+    return '<p class="aviso">No se pudo dar el permiso de red (se dijo que no o faltó la clave de administrador). Cuando Windows muestre el cartel del firewall, <b>marcá todas las casillas</b> y tocá Permitir acceso. También se puede hacer después desde Configuración → Instalación.</p>';
+  }
+
+  function esperarCentral(r) {
     var n = 0;
     (function prueba() {
       fetch('http://127.0.0.1:8765/api/info', { mode: 'no-cors' }).then(function () {
-        c.innerHTML = '<h1>¡Listo!</h1><p>Esta PC ya es la central. TeToca se abre en otra ventana: esta la podés cerrar.</p>';
-        setTimeout(function () { window.close(); }, 2500);
+        c.innerHTML = '<div style="display:flex;flex-direction:column;gap:16px;align-items:center"><h1>¡Listo!</h1><p>Esta PC ya es la central' +
+          (r && r.instalado ? ' y TeToca quedó instalado en ' + esc(r.carpeta) : '') + '. TeToca se abre en otra ventana: esta la podés cerrar.</p>' + avisoRed(r) + '</div>';
+        setTimeout(function () { window.close(); }, avisoRed(r) ? 15000 : 3000);
       }).catch(function () {
         if (++n > 60) { c.innerHTML = '<p class="err">La PC central no arrancó. Cerrá TeToca y volvé a abrirlo.</p>'; return; }
         setTimeout(prueba, 500);
@@ -83,7 +107,67 @@ input{height:42px;border:1px solid #D9D5CC;border-radius:10px;padding:0 12px;fon
 
   function elegir(ip, host) {
     if (!ip) return;
-    post('/local/elegir', { modo: 'puesto', ip: ip, host: host }).then(conectar).catch(function (e) { var el = document.getElementById('e'); if (el) el.textContent = e.message; });
+    post('/local/elegir', { modo: 'puesto', ip: ip, host: host, instalar: instalar }).then(function (r) {
+      if (r && r.instalado) {
+        c.innerHTML = '<h1>¡Listo!</h1><p>TeToca quedó instalado en ' + esc(r.carpeta) + ' y se abre en otra ventana. Esta la podés cerrar.</p>';
+        setTimeout(function () { window.close(); }, 3000);
+      } else conectar();
+    }).catch(function (e) { var el = document.getElementById('e'); if (el) el.textContent = e.message; });
+  }
+
+  // ---------- Configuración → Instalación (se abre como /instalacion?volver=...) ----------
+  function volverURL() {
+    var m = /[?&]volver=([^&]+)/.exec(location.search), u = m ? decodeURIComponent(m[1]) : '';
+    return /^https?:\/\//.test(u) ? u : '';
+  }
+  function vistaInstalacion(msg) {
+    get('/local/instalacion').then(function (e) {
+      if (!e.soportado) { c.innerHTML = '<h1>Instalación</h1><p>Esta opción es solo para Windows.</p>'; return; }
+      var fila = function (t, ok, si, no) { return '<div class="c"><div><b>' + t + '</b></div><span class="' + (ok ? 'si">' + si : 'no">' + no) + '</span></div>'; };
+      var completo = e.instalado && e.inicio && (!e.central || e.red);
+      c.innerHTML = '<div style="display:flex;flex-direction:column;gap:18px;align-items:center"><h1>Instalación en esta PC</h1>' +
+        '<p>TeToca ' + esc(e.version) + ' · ' + (e.central ? 'PC central' : 'Puesto') + '</p>' +
+        '<div class="est">' + fila('Carpeta', e.instalado, '✓ ' + esc(e.carpeta), '✗ Está en ' + esc(e.actual)) +
+        fila('Se abre solo al prender la PC', e.inicio, '✓ Sí', '✗ No') +
+        (e.central ? fila('Permiso de red (firewall)', e.red, '✓ Todas las redes', '✗ Falta') : '') + '</div>' +
+        (msg || '') +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">' +
+        (completo ? '' : '<button class="azul" id="bInst">' + (e.instalado ? 'Reparar instalación' : 'Instalar en ' + esc(e.carpeta)) + '</button>') +
+        '<button class="rojo" id="bDes">Desinstalar TeToca de esta PC</button>' +
+        (volverURL() ? '<button class="gris" id="bVol">Volver</button>' : '') + '</div>' +
+        (completo ? '' : '<p class="small">Windows puede preguntar si permitís que TeToca haga cambios: tocá Sí.</p>') + '</div>';
+      if (document.getElementById('bVol')) document.getElementById('bVol').onclick = function () { location.href = volverURL(); };
+      if (document.getElementById('bInst')) document.getElementById('bInst').onclick = function () {
+        c.innerHTML = '<div class="spin"></div><p>Instalando…<br><br><b>Si Windows pregunta si permitís que TeToca haga cambios, tocá Sí.</b></p>';
+        post('/local/instalacion', { accion: 'instalar' }).then(function (r) {
+          var aviso = r.red === false && e.central ? '<p class="aviso">No se pudo dar el permiso de red (se dijo que no o faltó la clave de administrador). Probá de nuevo con alguien que tenga la clave.</p>' : '';
+          if (!r.reinicia) { vistaInstalacion(aviso); return; }
+          c.innerHTML = '<div class="spin"></div><p>Abriendo TeToca desde la carpeta nueva…</p>';
+          var n = 0;
+          (function esperar() {
+            setTimeout(function () {
+              get('/local/instalacion').then(function (e2) {
+                if (e2.instalado) { if (volverURL() && !aviso) location.href = volverURL(); else vistaInstalacion(aviso); }
+                else if (++n < 40) esperar();
+              }).catch(function () { if (++n < 40) esperar(); });
+            }, 1000);
+          })();
+        }).catch(function (er) { vistaInstalacion('<p class="err">' + esc(er.message) + '</p>'); });
+      };
+      document.getElementById('bDes').onclick = function () {
+        c.innerHTML = '<div style="display:flex;flex-direction:column;gap:16px;align-items:center;max-width:620px"><h1>¿Desinstalar TeToca de esta PC?</h1>' +
+          '<p>' + (e.central ? 'Esta es la <b>PC central</b>: se borran la lista de turnos y la configuración, y las demás PC dejan de funcionar hasta que haya otra central.' : 'Esta PC deja de conectarse a la central. Las demás siguen funcionando.') + '</p>' +
+          '<div style="display:flex;gap:10px"><button class="gris" id="bNo">Cancelar</button><button class="rojo" id="bSi">Sí, desinstalar</button></div></div>';
+        document.getElementById('bNo').onclick = function () { vistaInstalacion(); };
+        document.getElementById('bSi').onclick = function () {
+          c.innerHTML = '<div class="spin"></div><p>Desinstalando…</p>';
+          post('/local/instalacion', { accion: 'desinstalar' }).then(function () {
+            c.innerHTML = '<h1>TeToca se desinstaló</h1><p>Los archivos se borran solos cuando se cierra esta ventana.</p>';
+            setTimeout(function () { window.close(); }, 4000);
+          }).catch(function (er) { vistaInstalacion('<p class="err">' + esc(er.message) + '</p>'); });
+        };
+      };
+    }).catch(function () { c.innerHTML = '<h1>Instalación</h1><p class="err">La instalación se maneja desde la misma PC: abrí Configuración en esa computadora.</p>'; });
   }
 
   function conectar() {
@@ -102,6 +186,7 @@ input{height:42px;border:1px solid #D9D5CC;border-radius:10px;padding:0 12px;fon
     })();
   }
 
+  if (location.pathname === '/instalacion') { vistaInstalacion(); return; }
   get('/local/estado').then(function (l) {
     L = l;
     if (l.local.modo === 'puesto') conectar(); else inicio();
