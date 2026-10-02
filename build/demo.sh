@@ -16,7 +16,7 @@ rm -rf $D/datos; mkdir -p $D/datos
 go build -o $D/$EXE .
 echo '{"modo":"central","pc":"CENTRAL"}' > $D/datos/esta-pc.json
 echo '{"oficina":"Registro Automotor","seccional":"Azul 1 y 2","registros":["Azul 1","Azul 2"],"temaTV":"noche","sonido":"dingdong","pcs":{}}' > $D/datos/config.json
-( cd $D && ./$EXE --sinventana > salida.txt 2>&1 & echo $! > pid )
+( cd $D && { ./$EXE --sinventana > salida.txt 2>&1 & echo $! > pid; } )
 for i in $(seq 1 40); do curl -s -o /dev/null $B/api/estado && break; sleep 0.25; done
 curl -s -o /dev/null -F archivo=@build/demo/registro1.xls -F registro=1 $B/api/cargar
 curl -s -o /dev/null -F archivo=@build/demo/registro2.xls -F registro=2 $B/api/cargar
