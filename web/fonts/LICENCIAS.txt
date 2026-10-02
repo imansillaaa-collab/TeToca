@@ -2,4 +2,5 @@ Tipografías incluidas (licencia SIL Open Font License 1.1, uso libre incluso co
 - Plus Jakarta Sans (Tokotype)
 - Space Grotesk (Florian Karsten)
 - Montserrat (Julieta Ulanovsky y colaboradores)
+- Barlow Condensed (Jeremy Tribby)
 Archivos obtenidos de Fontsource (fontsource.org).

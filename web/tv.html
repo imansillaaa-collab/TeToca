@@ -44,7 +44,7 @@ body.t-verde{--topSecc:#F6C667;--bg:#F1F7F4;--txt:#12352D;--mut:#5E7F76;--top:#1
  --tagMb:#DDF1EA;--tagMf:#1D6B5A;--tagCb:#FDF0CF;--tagCf:#8A5A00;--tagAb:#FBE6E4;--tagAf:#A2332A;
  --ausB:#FDF4F2;--ausBd:#F0D0CB;--ausT:#A2332A;--ausI:#F5E0DC;--ausH:#A57A74;--pie:#1D6B5A;--pieTxt:#CFE8E1;--pieDot:#7FD1B9}
 body.t-contraste .actual{border-width:3px}
-body.t-contraste .nom{font-size:10vh}
+body.t-contraste .placa{border-color:#FFE600}
 
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Plus Jakarta Sans",Arial,sans-serif;overflow:hidden;cursor:none}
@@ -63,34 +63,52 @@ body.t-albiceleste .franja{display:block}
 .reloj b{font-family:"Space Grotesk",Arial,sans-serif;font-size:5.6vh;font-weight:600;line-height:1;display:block}
 .reloj span{font-size:2vh;color:var(--topSub);display:block;margin-top:.6vh}
 .cuerpo{-webkit-box-flex:1;flex:1;display:flex;padding:3.7vh 3.3vw;min-height:0}
-.actual{position:relative;-webkit-box-flex:1.35;flex:1.35 1 0;min-width:0;margin-right:2.1vw;background:var(--card);border:1px solid var(--cardB);border-radius:3.3vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4vh 3vw;text-align:center;overflow:hidden}
-#actualIn{position:relative;display:flex;flex-direction:column;align-items:center;max-width:100%}
-.solfondo{position:absolute;left:50%;top:50%;width:62vh;height:62vh;margin:-31vh 0 0 -31vh;display:none;pointer-events:none}
-body.t-celeste .solfondo{display:block;opacity:.13}
-body.t-sol .solfondo{display:block;opacity:.22}
+.actual{position:relative;-webkit-box-flex:1.35;flex:1.35 1 0;min-width:0;margin-right:2.1vw;background:var(--card);border:1px solid var(--cardB);border-radius:3.3vh;display:flex;flex-direction:column;overflow:hidden}
+#actualIn{position:relative;display:flex;flex-direction:column;-webkit-box-flex:1;flex:1;min-height:0;width:100%}
+.arriba{-webkit-box-flex:1;flex:1;min-height:0;display:flex;flex-direction:column;padding:4.5vh 3.6vw 3vh;overflow:hidden}
+/* centrado con márgenes automáticos: si algo no entra, sobra para abajo y se nota al medir */
+.arriba>*{flex-shrink:0}
+.arriba>.etq{margin-top:auto}
+.arriba>:last-child{margin-bottom:auto}
+.solfondo{position:absolute;right:-16vh;top:-10vh;width:54vh;height:54vh;display:none;pointer-events:none}
+body.t-celeste .solfondo{display:block;opacity:.16}
+body.t-sol .solfondo{display:block;opacity:.24}
 .actual.flash{-webkit-animation:fl .9s ease-in-out 4;animation:fl .9s ease-in-out 4}
 @-webkit-keyframes fl{0%,100%{background:var(--card)}50%{background:var(--flash)}}
 @keyframes fl{0%,100%{background:var(--card)}50%{background:var(--flash)}}
-.etq{display:flex;align-items:center;font-size:2.2vh;font-weight:700;letter-spacing:.28em;color:var(--mut)}
+.etq{display:flex;align-items:center;font-size:3vh;font-weight:700;color:var(--mut)}
 .pulso{width:1.7vh;height:1.7vh;border-radius:50%;background:#45D483;margin-right:1.3vh;-webkit-animation:pu 1.4s ease-in-out infinite;animation:pu 1.4s ease-in-out infinite}
 @-webkit-keyframes pu{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(69,212,131,.55)}50%{opacity:.35;box-shadow:0 0 0 1.3vh rgba(69,212,131,0)}}
 @keyframes pu{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(69,212,131,.55)}50%{opacity:.35;box-shadow:0 0 0 1.3vh rgba(69,212,131,0)}}
-.nom{margin-top:3vh;font-size:9.3vh;font-weight:800;line-height:1.06;letter-spacing:-.015em;max-width:100%;word-wrap:break-word}
-.lpre{margin-top:3.3vh;font-size:2.2vh;color:var(--mut);font-weight:600;letter-spacing:.12em}
-.pre{font-family:"Space Grotesk",Arial,sans-serif;font-size:9.6vh;font-weight:700;line-height:1.05;color:var(--pre);letter-spacing:.02em;white-space:nowrap}
-.pre .mas{font-family:"Plus Jakarta Sans",Arial,sans-serif;font-size:.36em;font-weight:800;letter-spacing:0;margin-left:.6em;padding:.25em .6em;border-radius:.4em;background:rgba(128,128,128,.16);vertical-align:middle}
-.dir{margin-top:4vh;display:flex;align-items:center}
-.dir .lbl{font-size:2.8vh;color:var(--mut);font-weight:600;margin-right:1.7vh}
-.chip{font-size:3.7vh;font-weight:800;padding:1.3vh 3.7vh;border-radius:99vh;letter-spacing:.02em;color:var(--chipTxt)}
-.chip.mesa{background:var(--chipM)}.chip.caja{background:var(--chipC)}
-.espera{font-size:5vh;color:var(--mut);font-weight:600}
+/* El nombre en letra angosta: entra más grande en una línea y se lee de lejos */
+.nom .l{display:block;white-space:nowrap}
+.nom{margin-top:2.2vh;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:13vh;font-weight:800;line-height:.98;text-transform:uppercase;max-width:100%;word-wrap:break-word}
+/* La precarga va en una patente, el objeto que todos en la sala conocen */
+.placa{margin-top:4.2vh;display:inline-block;align-self:flex-start;background:#FBFBF8;border:.55vh solid #12161E;border-radius:1.6vh;overflow:hidden;box-shadow:0 1.2vh 3vh rgba(0,0,0,.28)}
+.placa .pb{display:flex;align-items:center;justify-content:space-between;background:#1D4FA3;color:#fff;font-size:1.9vh;font-weight:700;letter-spacing:.14em;padding:.75vh 1.6vh .7vh 1.8vh}
+.placa .bandera{display:block;width:3.4vh;height:2.2vh;margin-left:3vh;border-radius:.3vh;background:linear-gradient(#74ACDF 0,#74ACDF 33.3%,#fff 33.3%,#fff 66.6%,#74ACDF 66.6%)}
+.placa .pn{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:11.5vh;font-weight:700;line-height:1;color:#12161E;letter-spacing:.06em;padding:.6vh 3.6vh 1vh;white-space:nowrap;text-align:center}
+/* Adónde ir: una franja de punta a punta, del color de cada lugar */
+.destino{display:flex;align-items:center;padding:3vh 3.6vw;color:var(--chipTxt);flex-shrink:0}
+.destino.mesa{background:var(--chipM)}.destino.caja{background:var(--chipC)}
+.destino svg{width:6vh;height:6vh;flex-shrink:0;margin-right:2.4vh}
+.destino .dl{font-size:3.4vh;font-weight:600;margin-right:1.6vh;opacity:.8}
+.destino b{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:7.4vh;font-weight:800;line-height:1;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nuevo .nom,.nuevo .placa,.nuevo .destino b{-webkit-animation:entra .7s cubic-bezier(.2,.8,.2,1) both;animation:entra .7s cubic-bezier(.2,.8,.2,1) both}
+.nuevo .placa{-webkit-animation-delay:.12s;animation-delay:.12s}
+.nuevo .destino b{-webkit-animation-delay:.24s;animation-delay:.24s}
+@-webkit-keyframes entra{from{opacity:0;-webkit-transform:translateY(3vh)}to{opacity:1;-webkit-transform:none}}
+@keyframes entra{from{opacity:0;transform:translateY(3vh)}to{opacity:1;transform:none}}
+.espera{margin:auto;padding:6vh 4vw;text-align:center}
+.espera b{display:block;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:10vh;font-weight:700;line-height:1;text-transform:uppercase}
+.espera span{display:block;margin-top:2.4vh;font-size:3vh;color:var(--mut);font-weight:500}
 .col{-webkit-box-flex:1;flex:1 1 0;min-width:0;display:flex;flex-direction:column;min-height:0}
 .panel{background:var(--panel);border:1px solid var(--panelB);border-radius:3vh;padding:2.8vh 2.1vw 1.4vh;overflow:hidden}
-.panel h3{font-size:2vh;font-weight:700;letter-spacing:.24em;color:var(--mut);margin-bottom:.7vh}
+.panel h3{font-size:2.6vh;font-weight:700;color:var(--mut);margin-bottom:1vh}
 .item{display:flex;align-items:center;padding:.95vh 0;border-top:1px solid var(--itemB)}
 .item .txt{-webkit-box-flex:1;flex:1;min-width:0;margin-right:1.2vw}
-.item .n{font-size:2.8vh;font-weight:800;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item .p{font-family:"Space Grotesk",Arial,sans-serif;font-size:1.95vh;font-weight:600;color:var(--itemP);margin-top:.5vh}
+.item .n{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:3.9vh;font-weight:700;line-height:1.05;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .p{font-family:"Space Grotesk",Arial,sans-serif;font-size:2.1vh;font-weight:600;color:var(--itemP);margin-top:.3vh;letter-spacing:.03em}
 .item .der{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0}
 .tag{font-size:1.85vh;font-weight:700;padding:.55vh 1.5vh;border-radius:99vh;letter-spacing:.04em;white-space:nowrap}
 .tag.mesa{background:var(--tagMb);color:var(--tagMf)}.tag.caja{background:var(--tagCb);color:var(--tagCf)}.tag.ausente{background:var(--tagAb);color:var(--tagAf);font-weight:800}
@@ -98,7 +116,7 @@ body.t-sol .solfondo{display:block;opacity:.22}
 .aus{margin-top:2vh;background:var(--ausB);border-color:var(--ausBd)}
 .aus h3{color:var(--ausT)}
 .aus .item{border-top-color:var(--ausI);padding:.8vh 0}
-.aus .n{font-size:2.5vh;font-weight:700}
+.aus .n{font-size:3.3vh}
 .aus .tag{font-size:1.6vh;padding:.4vh 1.1vh;margin-right:1vw}
 .aus .hora{margin-top:0;color:var(--ausH)}
 .vacio{color:var(--vacio);font-size:2.2vh;padding:1vh 0}
@@ -120,10 +138,10 @@ body.t-sol .solfondo{display:block;opacity:.22}
     <div class="reloj"><b id="hora">--:--</b><span id="fecha"></span></div>
   </div>
   <div class="cuerpo">
-    <div class="actual" id="actual"><svg class="solfondo" viewBox="0 0 100 100"><path d="M80.0 50.0L98.0 50.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M77.7 61.5L94.3 68.4" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M71.2 71.2L83.9 83.9" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M61.5 77.7L68.4 94.3" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M50.0 80.0L50.0 98.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M38.5 77.7L31.6 94.3" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M28.8 71.2L16.1 83.9" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M22.3 61.5L5.7 68.4" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M20.0 50.0L2.0 50.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M22.3 38.5L5.7 31.6" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M28.8 28.8L16.1 16.1" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M38.5 22.3L31.6 5.7" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M50.0 20.0L50.0 2.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M61.5 22.3L68.4 5.7" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M71.2 28.8L83.9 16.1" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M77.7 38.5L94.3 31.6" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><circle cx="50" cy="50" r="24" fill="#F6B40E"/></svg><div id="actualIn"><div class="espera">Aguarde a ser llamado</div></div></div>
+    <div class="actual" id="actual"><svg class="solfondo" viewBox="0 0 100 100"><path d="M80.0 50.0L98.0 50.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M77.7 61.5L94.3 68.4" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M71.2 71.2L83.9 83.9" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M61.5 77.7L68.4 94.3" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M50.0 80.0L50.0 98.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M38.5 77.7L31.6 94.3" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M28.8 71.2L16.1 83.9" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M22.3 61.5L5.7 68.4" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M20.0 50.0L2.0 50.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M22.3 38.5L5.7 31.6" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M28.8 28.8L16.1 16.1" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M38.5 22.3L31.6 5.7" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M50.0 20.0L50.0 2.0" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M61.5 22.3L68.4 5.7" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M71.2 28.8L83.9 16.1" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><path d="M77.7 38.5L94.3 31.6" stroke="#F6B40E" stroke-width="3.2" stroke-linecap="round"/><circle cx="50" cy="50" r="24" fill="#F6B40E"/></svg><div id="actualIn"><div class="espera"><b>Aguarde a ser llamado</b><span>Su nombre va a aparecer en esta pantalla</span></div></div></div>
     <div class="col">
-      <div class="panel" id="pUlt"><h3>ÚLTIMOS LLAMADOS</h3><div id="ultimos"></div></div>
-      <div class="panel aus" id="pAus"><h3>AUSENTES</h3><div id="ausentes"></div></div>
+      <div class="panel" id="pUlt"><h3>Últimos llamados</h3><div id="ultimos"></div></div>
+      <div class="panel aus" id="pAus"><h3>No se presentaron</h3><div id="ausentes"></div></div>
     </div>
   </div>
   <div class="pie"><span>Tenga a mano su número de precarga</span><i></i><span>Si no escuchó su nombre, revise la lista de últimos llamados</span></div>
@@ -145,13 +163,26 @@ body.t-sol .solfondo{display:block;opacity:.22}
   }
   reloj(); setInterval(reloj, 5000);
 
+  // el nombre arranca bien grande y se achica hasta entrar en dos renglones como mucho
   function ajustar(el) {
-    var caja = $('actual'), fs = 9.3, vh = window.innerHeight / 100;
+    if (!el) return;
+    var caja = el.parentNode, fs = 14, vh = window.innerHeight / 100;
     el.style.fontSize = fs + 'vh';
-    while (fs > 4 && (el.offsetHeight > vh * 23 || caja.scrollHeight > caja.clientHeight + 2)) {
+    // que entre a lo ancho y que la patente no quede cortada abajo
+    while (fs > 5 && (el.scrollWidth > el.clientWidth + 2 || caja.scrollHeight > caja.clientHeight + 2)) {
       fs -= 0.4; el.style.fontSize = fs + 'vh';
     }
   }
+  // cuando terminan de cargar las letras se vuelve a medir (antes mide con otra letra)
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { ajustar($('nomActual')); });
+  // "PEREZ, MARIA LAURA": apellido en un renglón y nombres en el otro
+  function nombreEnDos(n) {
+    var i = n.indexOf(',');
+    if (i < 0) return T.esc(n);
+    return '<span class="l">' + T.esc(n.slice(0, i + 1)) + '</span><span class="l">' + T.esc(n.slice(i + 1).replace(/^\s+/, '')) + '</span>';
+  }
+  var FLECHA = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="currentColor" opacity=".16"/><path d="M14 24h19M25 15l9 9-9 9" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var mostrado = '';
 
   function render(v) {
     var e = v.estado, c = v.config, porId = {}, i;
@@ -169,13 +200,21 @@ body.t-sol .solfondo{display:block;opacity:.22}
     if (document.body.className !== 't-' + tema) document.body.className = 't-' + tema;
     if (ultimo && porId[ultimo.turnoId]) {
       var t = porId[ultimo.turnoId];
-      inner.innerHTML = '<div class="etq"><span class="pulso"></span>AHORA LLAMANDO</div>' +
-        '<div class="nom" id="nomActual">' + T.esc(T.nombre(t.nombre)) + '</div>' +
-        (t.precarga ? '<div class="lpre">N.º DE PRECARGA</div><div class="pre">' + T.esc(t.precarga) + '</div>' : '') +
-        '<div class="dir"><span class="lbl">Diríjase a</span><span class="chip ' + (ultimo.dest === 'caja' ? 'caja' : 'mesa') + '">' + T.esc(ultimo.destino) + '</span></div>';
-      ajustar($('nomActual'));
-    } else {
-      inner.innerHTML = '<div class="espera">Aguarde a ser llamado</div>';
+      var html = '<div class="arriba"><div class="etq"><span class="pulso"></span>Llamando ahora</div>' +
+        '<div class="nom" id="nomActual">' + nombreEnDos(T.nombre(t.nombre)) + '</div>' +
+        (t.precarga ? '<div class="placa"><div class="pb"><span>PRECARGA</span><i class="bandera"></i></div><div class="pn">' + T.esc(t.precarga) + '</div></div>' : '') +
+        '</div><div class="destino ' + (ultimo.dest === 'caja' ? 'caja' : 'mesa') + '">' + FLECHA + '<span class="dl">Diríjase a</span><b>' + T.esc(ultimo.destino) + '</b></div>';
+      // solo se vuelve a dibujar si cambió algo (así la entrada no se repite sola)
+      if (html !== mostrado) {
+        var esNuevo = mostrado !== '' && ultimoSeq !== null && ultimo.seq > ultimoSeq;
+        inner.innerHTML = html; mostrado = html;
+        inner.className = esNuevo ? 'nuevo' : '';
+        ajustar($('nomActual'));
+      }
+    } else if (mostrado !== 'espera') {
+      mostrado = 'espera';
+      inner.className = '';
+      inner.innerHTML = '<div class="espera"><b>Aguarde a ser llamado</b><span>Su nombre va a aparecer en esta pantalla</span></div>';
     }
     // últimos llamados: distintas personas, sin la actual
     var vistos = {}, ult = [], max = c.ultimos || 5;
@@ -190,7 +229,7 @@ body.t-sol .solfondo{display:block;opacity:.22}
       h += '<div class="item"><div class="txt"><div class="n">' + T.esc(T.nombre(tu.nombre)) + '</div><div class="p">' + T.esc(tu.precarga) + '</div></div>' +
         '<div class="der"><span class="tag ' + (aus ? 'ausente' : ult[i].dest) + '">' + (aus ? 'AUSENTE' : T.esc(ult[i].etiqueta)) + '</span><span class="hora">' + T.hhmm(ult[i].hora) + '</span></div></div>';
     }
-    $('ultimos').innerHTML = h || '<div class="vacio">—</div>';
+    $('ultimos').innerHTML = h || '<div class="vacio">Todavía no se llamó a nadie.</div>';
     // ausentes
     var ausentes = [], maxA = c.ausentes == null ? 3 : c.ausentes;
     for (i = 0; i < (e.turnos || []).length; i++) if (e.turnos[i].estado === 'ausente') ausentes.push(e.turnos[i]);
@@ -202,7 +241,7 @@ body.t-sol .solfondo{display:block;opacity:.22}
       var a = ausentes[i];
       h += '<div class="item"><div class="txt"><div class="n">' + T.esc(T.nombre(a.nombre)) + '</div></div><span class="tag ' + (a.ausenteEn === 'caja' ? 'caja' : 'mesa') + '">' + (a.ausenteEn === 'caja' ? 'CAJA' : 'MESA') + '</span><span class="hora">' + T.hhmm(a.ausenteA) + '</span></div>';
     }
-    $('ausentes').innerHTML = h || '<div class="vacio">—</div>';
+    $('ausentes').innerHTML = h || '<div class="vacio">Nadie por ahora.</div>';
 
     // llamado nuevo: titilar y sonar
     if (ultimoSeq !== null && e.seq > ultimoSeq && ultimo && ultimo.seq > ultimoSeq) {

@@ -7,3 +7,6 @@
 @font-face{font-family:"Space Grotesk";font-weight:600;font-display:swap;src:url(/static/fonts/space-grotesk-latin-600-normal.woff2) format("woff2")}
 @font-face{font-family:"Space Grotesk";font-weight:700;font-display:swap;src:url(/static/fonts/space-grotesk-latin-700-normal.woff2) format("woff2")}
 @font-face{font-family:"Montserrat";font-weight:700;font-display:swap;src:url(/static/fonts/montserrat-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(/static/fonts/barlow-condensed-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:700;font-display:swap;src:url(/static/fonts/barlow-condensed-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:800;font-display:swap;src:url(/static/fonts/barlow-condensed-latin-800-normal.woff2) format("woff2")}
