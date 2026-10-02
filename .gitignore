@@ -3,3 +3,4 @@ dist/
 datos/
 *.exe
 *.log
+.demo/
