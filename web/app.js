@@ -547,17 +547,50 @@
   }
 
   // ---------- archivos ----------
-  $('archivo').onchange = async (e) => {
-    const f = e.target.files[0]; e.target.value = '';
-    if (!f) return;
-    const fd = new FormData(); fd.append('archivo', f); fd.append('registro', cargaReg);
+  // Sube un archivo a un registro. Devuelve la respuesta o null si falló (ya avisó).
+  async function subirArchivo(f, reg) {
+    const fd = new FormData(); fd.append('archivo', f); fd.append('registro', reg);
     try {
       const r = await fetch('/api/cargar', { method: 'POST', body: fd });
       const j = await r.json();
-      if (!r.ok) { toast(j.error || 'No se pudo cargar el archivo.', true); return; }
-      toast('Listo: se cargaron ' + j.cantidad + ' turnos' + (dosReg() ? ' de ' + nomReg(cargaReg) : '') + '.' + (j.aviso ? ' ' + j.aviso : ''), !!j.aviso);
-      if (dosReg()) setTimeout(() => { if ($('modal').innerHTML) modalCarga(); }, 700);
-    } catch (err) { toast('No hay conexión con la PC central.', true); }
+      if (!r.ok) { toast((j.error || 'No se pudo cargar el archivo.') + ' (' + f.name + ')', true); return null; }
+      return j;
+    } catch (err) { toast('No hay conexión con la PC central.', true); return null; }
+  }
+  // Pasa a "dos registros" sin que nadie tenga que entrar a Configuración.
+  async function activarDosRegistros() {
+    if (dosReg()) return;
+    await api('/api/config', { registros: [regs()[0] || 'R1', regs()[1] || 'R2'] });
+    if (V) V.config.registros = [regs()[0] || 'R1', regs()[1] || 'R2'];
+  }
+  $('archivo').onchange = async (e) => {
+    const fs = Array.from(e.target.files || []).slice(0, 2); e.target.value = '';
+    if (!fs.length) return;
+    // Eligieron los dos archivos juntos: uno para cada registro.
+    if (fs.length === 2) {
+      await activarDosRegistros();
+      const a = await subirArchivo(fs[0], '1');
+      const b = a && await subirArchivo(fs[1], '2');
+      if (a && b) toast('Listo: ' + a.cantidad + ' turnos de ' + nomReg(1) + ' y ' + b.cantidad + ' de ' + nomReg(2) + ', en una sola lista.' + (a.aviso || b.aviso ? ' ' + (a.aviso || b.aviso) : ''), !!(a.aviso || b.aviso));
+      return;
+    }
+    const f = fs[0];
+    // Con un solo registro configurado y ya hay otro archivo de hoy: preguntar
+    // en vez de pisarlo (casi siempre es el archivo del otro registro).
+    const fu = (V.estado.cargadoDia === V.hoy && V.estado.fuentes) || {};
+    if (!dosReg() && fu['1'] && fu['1'].archivo !== f.name) {
+      modal(`<h3>Ya hay un archivo cargado hoy</h3><p>Antes se cargó <b>${esc(fu['1'].archivo)}</b> (${fu['1'].cantidad} turnos). ¿El que elegiste ahora es del otro registro?</p>
+        <button class="btn" id="mSumar" style="background:#2F6FDB;color:#fff;border:0">Sí, sumarlo a la lista (es del otro registro)</button>
+        <button class="btn" id="mPisar">No, reemplazar el anterior</button>`);
+      $('mSumar').onclick = async () => { modal(''); await activarDosRegistros(); const j = await subirArchivo(f, '2'); if (j) toast('Listo: se sumaron ' + j.cantidad + ' turnos de ' + nomReg(2) + '. Quedó todo en una sola lista.' + (j.aviso ? ' ' + j.aviso : ''), !!j.aviso); };
+      $('mPisar').onclick = async () => { modal(''); const j = await subirArchivo(f, '1'); if (j) toast('Listo: se cargaron ' + j.cantidad + ' turnos.' + (j.aviso ? ' ' + j.aviso : ''), !!j.aviso); };
+      $('fondoModal').onclick = (ev) => { if (ev.target.id === 'fondoModal') modal(''); };
+      return;
+    }
+    const j = await subirArchivo(f, cargaReg);
+    if (!j) return;
+    toast('Listo: se cargaron ' + j.cantidad + ' turnos' + (dosReg() ? ' de ' + nomReg(cargaReg) : '') + '.' + (j.aviso ? ' ' + j.aviso : ''), !!j.aviso);
+    if (dosReg()) setTimeout(() => { if ($('modal').innerHTML) modalCarga(); }, 700);
   };
   $('archivoLogo').onchange = async (e) => {
     const f = e.target.files[0]; e.target.value = '';
