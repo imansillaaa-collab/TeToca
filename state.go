@@ -105,6 +105,10 @@ type Config struct {
 	Registros []string `json:"registros"`
 	// Canal de actualizaciones ("" = general). Ver update.go.
 	Canal string `json:"canal"`
+	// Volumen del Chromecast (0-100). 0 = automático: si el Chromecast es un
+	// dispositivo enchufado al TV, se pone al 100% (el volumen real se maneja con
+	// el control remoto del TV); si es un TV con Chromecast integrado, no se toca.
+	VolumenTV int `json:"volumenTV"`
 }
 
 var temasTV = map[string]bool{"noche": true, "celeste": true, "albiceleste": true, "sol": true, "claro": true, "contraste": true, "verde": true}

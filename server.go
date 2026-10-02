@@ -221,7 +221,7 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 		var q struct {
 			Sonido, Tema, Organismo, Oficina, TemaTV, Seccional, Canal *string
 			Registros                                                  *[]string
-			Ultimos, Ausentes                                          *int
+			Ultimos, Ausentes, VolumenTV                               *int
 		}
 		if err := leerBody(r, &q); err != nil {
 			jsonErr(w, err)
@@ -276,6 +276,10 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 			}
 			if q.Ausentes != nil && *q.Ausentes >= 0 && *q.Ausentes <= 6 {
 				c.Ausentes = *q.Ausentes
+			}
+			if q.VolumenTV != nil && *q.VolumenTV >= 0 && *q.VolumenTV <= 100 {
+				c.VolumenTV = *q.VolumenTV
+				caster.AjustarVolumen()
 			}
 		})
 		jsonOK(w, nil)

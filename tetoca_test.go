@@ -66,12 +66,14 @@ func tvFalso(t *testing.T, recibido chan castMsg) (string, int) {
 			_, _ = c.Write(b)
 		}
 		abierta := false
+		nivel := 0.3
 		estado := func() {
 			apps := []map[string]interface{}{{"appId": "E8C28D3C", "displayName": "Backdrop", "isIdleScreen": true, "transportId": "bd"}}
 			if abierta {
 				apps = []map[string]interface{}{{"appId": "84912283", "displayName": "DashCast", "transportId": "web-7"}}
 			}
-			enviar("receiver-0", nsReceptor, map[string]interface{}{"type": "RECEIVER_STATUS", "status": map[string]interface{}{"applications": apps}})
+			enviar("receiver-0", nsReceptor, map[string]interface{}{"type": "RECEIVER_STATUS", "status": map[string]interface{}{"applications": apps,
+				"volume": map[string]interface{}{"controlType": "attenuation", "level": nivel, "muted": false}}})
 		}
 		for {
 			m, err := leer()
@@ -81,6 +83,11 @@ func tvFalso(t *testing.T, recibido chan castMsg) (string, int) {
 			recibido <- m
 			switch {
 			case strings.Contains(m.Payload, "GET_STATUS"):
+				estado()
+			case strings.Contains(m.Payload, "SET_VOLUME") && strings.Contains(m.Payload, `"level"`):
+				var q struct{ Volume struct{ Level float64 } }
+				_ = json.Unmarshal([]byte(m.Payload), &q)
+				nivel = q.Volume.Level
 				estado()
 			case strings.Contains(m.Payload, "LAUNCH"):
 				abierta = true
@@ -102,8 +109,8 @@ func TestTransmitirAlTV(t *testing.T) {
 	store.C.TV = TVConf{ID: "x", Nombre: "TV Sala", Host: host, Port: port, Auto: true, Receptor: "dashcast"}
 	go caster.Loop()
 	fin := time.After(8 * time.Second)
-	var lanzo, url bool
-	for !(lanzo && url) {
+	var lanzo, url, vol bool
+	for !(lanzo && url && vol) {
 		select {
 		case m := <-recibido:
 			if strings.Contains(m.Payload, `"LAUNCH"`) && strings.Contains(m.Payload, "84912283") {
@@ -112,13 +119,41 @@ func TestTransmitirAlTV(t *testing.T) {
 			if m.NS == "urn:x-cast:com.madmod.dashcast" && m.Dst == "web-7" && strings.Contains(m.Payload, "/tv") && strings.Contains(m.Payload, `"force":true`) {
 				url = true
 			}
+			if strings.Contains(m.Payload, "SET_VOLUME") && strings.Contains(m.Payload, `"level":1`) {
+				vol = true
+			}
 		case <-fin:
-			t.Fatalf("no se completó la transmisión (lanzó=%v, url=%v)", lanzo, url)
+			t.Fatalf("no se completó la transmisión (lanzó=%v, url=%v, volumen=%v)", lanzo, url, vol)
 		}
 	}
 	time.Sleep(200 * time.Millisecond)
 	if st := tvStatus(); st.Estado != "conectado" {
 		t.Fatalf("estado esperado conectado, fue %q (%s)", st.Estado, st.Mensaje)
+	}
+	if st := tvStatus(); st.Volumen != 100 || st.Control != "attenuation" {
+		t.Fatalf("el Chromecast debería quedar al 100%%: %+v", st)
+	}
+	// con un volumen fijo elegido en Configuración, se respeta ese
+	store.mu.Lock()
+	store.C.VolumenTV = 60
+	store.mu.Unlock()
+	caster.AjustarVolumen()
+	fin = time.After(5 * time.Second)
+	for {
+		select {
+		case m := <-recibido:
+			if strings.Contains(m.Payload, "SET_VOLUME") && strings.Contains(m.Payload, `"level":0.6`) {
+				return
+			}
+		case <-fin:
+			t.Fatal("no se ajustó el volumen al 60%")
+		}
+	}
+}
+
+func TestVolumenDeseado(t *testing.T) {
+	if volumenDeseado(0, "attenuation") != 1 || volumenDeseado(0, "master") != -1 || volumenDeseado(0, "fixed") != -1 || volumenDeseado(40, "master") != 0.4 {
+		t.Fatal("volumenDeseado mal")
 	}
 }
 

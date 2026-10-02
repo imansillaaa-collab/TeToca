@@ -128,6 +128,17 @@
     return `<span class="pill p-${t.estado}">${esc(txt)}</span>`;
   }
 
+  // Volumen del Chromecast: lo informa la central mientras transmite.
+  function estadoVolumenTV() {
+    const tv = V.tv || {}, auto = !(V.config.volumenTV > 0);
+    if (tv.estado !== 'conectado' || tv.volumen == null || tv.volumen < 0) return '<span style="color:var(--muted)">Se ve cuando el TV está conectado.</span>';
+    let t = `Ahora está al <b>${tv.volumen}%</b>${tv.silenciado ? ' <b style="color:var(--danger)">(silenciado)</b>' : ''}. `;
+    if (tv.control === 'master') t += auto ? 'Este TV trae el Chromecast adentro: su volumen es el del TV, por eso en Automático no se toca. Elegí un nivel para que TeToca lo deje fijo.' : 'TeToca lo mantiene en ese nivel.';
+    else if (tv.control === 'fixed') t += 'Este equipo no deja cambiar el volumen desde TeToca: subilo con el control remoto del TV.';
+    else t += auto ? 'En Automático TeToca lo deja al 100% y el volumen se maneja con el control del TV.' : 'TeToca lo mantiene en ese nivel.';
+    return `<span style="color:var(--muted)">${t}</span>`;
+  }
+
   let esperandoPrueba = 0;
   function resultadoSonidoTV() {
     const r = V.tvSonido;
@@ -497,7 +508,9 @@
           <div class="campo"><label>Receptor</label><div class="segc"><button data-rec="dashcast" class="${(c.tv.receptor || 'dashcast') === 'dashcast' ? 'on' : ''}">DashCast (recomendado)</button><button data-rec="urlcast" class="${c.tv.receptor === 'urlcast' ? 'on' : ''}">URL Cast Receiver</button></div>
           <a href="/tv" target="_blank" class="chico" style="text-decoration:none">Abrir pantalla de sala en el navegador</a></div>
           <div class="campo"><label>Sonido en el TV</label><button class="chico" id="cProbarTV">Probar sonido en el TV</button>
-            <span id="cTVSon" style="font-size:13px;line-height:1.4">${resultadoSonidoTV()}</span></div></div>
+            <span id="cTVSon" style="font-size:13px;line-height:1.4">${resultadoSonidoTV()}</span></div>
+          <div class="campo"><label>Volumen del Chromecast</label><div class="segc">${[[0, 'Automático'], [100, '100%'], [80, '80%'], [60, '60%'], [40, '40%']].map(([n, t]) => `<button data-voltv="${n}" class="${(c.volumenTV || 0) === n ? 'on' : ''}">${t}</button>`).join('')}</div>
+            <span style="font-size:13px;line-height:1.4">${estadoVolumenTV()}</span></div></div>
       </div></div>`;
     document.querySelectorAll('[data-play]').forEach((b) => { b.onclick = () => { const id = b.dataset.play; sonando = id; const d = T.tocar(id); vistaConfig(); setTimeout(() => { sonando = null; if (vista === 'config' && !enEdicion()) vistaConfig(); }, d * 1000); }; });
     document.querySelectorAll('[data-elegir]').forEach((b) => { b.onclick = () => { T.tocar(b.dataset.elegir); api('/api/config', { sonido: b.dataset.elegir }); }; });
@@ -506,6 +519,7 @@
     document.querySelectorAll('[data-estilo]').forEach((b) => { b.onclick = () => { estilo = b.dataset.estilo; guardarLocal('tetoca-estilo', estilo); render(); }; });
     document.querySelectorAll('[data-temtv]').forEach((b) => { b.onclick = () => api('/api/config', { temaTV: b.dataset.temtv }); });
     document.querySelectorAll('[data-rec]').forEach((b) => { b.onclick = () => api('/api/tv/receptor', { receptor: b.dataset.rec }); });
+    document.querySelectorAll('[data-voltv]').forEach((b) => { b.onclick = () => api('/api/config', { volumenTV: +b.dataset.voltv }); });
     $('cProbarTV').onclick = () => { esperandoPrueba = Date.now(); api('/api/tv/probar-sonido', {}); vistaConfig(); };
     $('cBox').onchange = () => api('/api/pc', { pc: PC, box: $('cBox').value.trim() });
     $('cMostrar').onclick = () => api('/api/pc', { pc: PC, mostrarBox: !yo.mostrarBox });

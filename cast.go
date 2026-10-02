@@ -295,17 +295,54 @@ type TVStatus struct {
 	Nombre  string `json:"nombre"`
 	Mensaje string `json:"mensaje"`
 	URL     string `json:"url"`
+	// Volumen del Chromecast tal como lo informa (0-100, -1 si no se sabe) y si
+	// controla el volumen del propio TV ("master") o solo la salida ("attenuation").
+	Volumen    int    `json:"volumen"`
+	Control    string `json:"control"`
+	Silenciado bool   `json:"silenciado"`
 }
 
 type Caster struct {
-	mu     sync.Mutex
-	st     TVStatus
-	forzar chan bool
-	cortar chan struct{}
-	activo *castConn
+	mu      sync.Mutex
+	st      TVStatus
+	forzar  chan bool
+	cortar  chan struct{}
+	activo  *castConn
+	volumen chan struct{}
 }
 
-var caster = &Caster{forzar: make(chan bool, 1), cortar: make(chan struct{}, 1)}
+var caster = &Caster{forzar: make(chan bool, 1), cortar: make(chan struct{}, 1), volumen: make(chan struct{}, 1)}
+
+// AjustarVolumen pide revisar el volumen del Chromecast ahora (cambió la configuración).
+func (c *Caster) AjustarVolumen() {
+	select {
+	case c.volumen <- struct{}{}:
+	default:
+	}
+}
+
+// volumenDeseado: a qué nivel (0-1) hay que dejar el Chromecast, o -1 para no tocarlo.
+func volumenDeseado(config int, control string) float64 {
+	if config > 0 {
+		return float64(config) / 100
+	}
+	if control == "attenuation" {
+		// Chromecast enchufado al TV: su volumen solo achica la salida. Al 100% suena
+		// todo lo que puede y el volumen se maneja con el control remoto del TV.
+		return 1
+	}
+	return -1
+}
+
+func (c *Caster) setVolumen(v int, control string, mute bool) {
+	c.mu.Lock()
+	cambio := c.st.Volumen != v || c.st.Control != control || c.st.Silenciado != mute
+	c.st.Volumen, c.st.Control, c.st.Silenciado = v, control, mute
+	c.mu.Unlock()
+	if cambio && store != nil {
+		store.avisar()
+	}
+}
 
 func tvStatus() TVStatus {
 	caster.mu.Lock()
@@ -376,6 +413,11 @@ func (c *Caster) Loop() {
 type recvStatus struct {
 	Type   string `json:"type"`
 	Status struct {
+		Volume *struct {
+			ControlType string   `json:"controlType"`
+			Level       *float64 `json:"level"`
+			Muted       bool     `json:"muted"`
+		} `json:"volume"`
 		Applications []struct {
 			AppID        string `json:"appId"`
 			DisplayName  string `json:"displayName"`
@@ -391,6 +433,7 @@ func (c *Caster) sesion(tv TVConf, forzar bool) error {
 	if port == 0 {
 		port = 8009
 	}
+	c.setVolumen(-1, "", false)
 	cc, err := dialCast(tv.Host, port)
 	if err != nil {
 		return err
@@ -448,7 +491,7 @@ func (c *Caster) sesion(tv TVConf, forzar bool) error {
 	ultimo := time.Now()
 	lanzado := false
 	cargadoEn := ""
-	var ultimoLanzamiento time.Time
+	var ultimoLanzamiento, ultimoVolumen time.Time
 	for {
 		select {
 		case err := <-errs:
@@ -474,6 +517,11 @@ func (c *Caster) sesion(tv TVConf, forzar bool) error {
 			if err := pedirEstado(); err != nil {
 				return err
 			}
+		case <-c.volumen:
+			ultimoVolumen = time.Time{}
+			if err := pedirEstado(); err != nil {
+				return err
+			}
 		case m := <-msgs:
 			ultimo = time.Now()
 			if m.NS == nsLatido && strings.Contains(m.Payload, `"PING"`) {
@@ -489,6 +537,23 @@ func (c *Caster) sesion(tv TVConf, forzar bool) error {
 					c.set("error", "El TV no pudo abrir la pantalla de sala. Probá cambiar el receptor en Configuración.")
 				}
 				continue
+			}
+			if v := st.Status.Volume; v != nil && v.Level != nil {
+				c.setVolumen(int(*v.Level*100+0.5), v.ControlType, v.Muted)
+				store.mu.Lock()
+				conf := store.C.VolumenTV
+				store.mu.Unlock()
+				quiero := volumenDeseado(conf, v.ControlType)
+				if quiero >= 0 && time.Since(ultimoVolumen) > 3*time.Second && (v.Muted || *v.Level < quiero-0.01 || *v.Level > quiero+0.01) {
+					ultimoVolumen = time.Now()
+					logf("tv: volumen del Chromecast %d%% (%s%s) → %d%%", int(*v.Level*100+0.5), v.ControlType, map[bool]string{true: ", silenciado", false: ""}[v.Muted], int(quiero*100+0.5))
+					req++
+					_ = cc.send("receiver-0", nsReceptor, map[string]interface{}{"type": "SET_VOLUME", "volume": map[string]interface{}{"level": quiero}, "requestId": req})
+					if v.Muted {
+						req++
+						_ = cc.send("receiver-0", nsReceptor, map[string]interface{}{"type": "SET_VOLUME", "volume": map[string]interface{}{"muted": false}, "requestId": req})
+					}
+				}
 			}
 			var nuestra, otra string
 			var transporte string

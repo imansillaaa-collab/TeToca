@@ -104,6 +104,8 @@
       cb(!!(c && c.state === 'running'), 'mp3 falló (' + motivo + '); sonido generado, audio=' + (c ? c.state : 'no disponible'));
       return d;
     }
+    // Se reproduce UNA sola vez. Antes, si el TV tardaba en arrancar, se volvía a
+    // lanzar el sonido o se generaba otro encima, y se escuchaban dos mezclados (raro).
     function intentar() {
       intentos++;
       var a = archivo(id);
@@ -113,16 +115,18 @@
         a.pause(); a.currentTime = 0; a.volume = 1; a.muted = false;
         var p = a.play();
         var verificar = function () {
-          // en algunos equipos play() "anda" pero el audio no avanza: lo controlamos
+          // en algunos equipos play() "anda" pero el audio no avanza: lo controlamos,
+          // con tiempo de sobra para un TV lento, y si de verdad no arrancó se corta
+          // antes de generar el sonido de respaldo (nunca suenan los dos juntos)
           setTimeout(function () {
             if (a.currentTime > 0 || a.ended) { ultimoOK = true; cb(true, 'mp3 ' + info(a)); }
-            else if (intentos < 2) { archivos[id] = null; intentar(); }
-            else { ultimoOK = false; porSintesis('no avanzó, ' + info(a)); }
-          }, 1200);
+            else { try { a.pause(); } catch (e) {} ultimoOK = false; archivos[id] = null; porSintesis('no avanzó, ' + info(a)); }
+          }, 3000);
         };
         if (p && p.then) {
           p.then(function () { ultimoOK = true; verificar(); }, function (e) {
-            if (intentos < 2) { archivos[id] = null; intentar(); }
+            // rechazado antes de sonar: se puede reintentar sin riesgo de superponer
+            if (intentos < 2) { archivos[id] = null; setTimeout(intentar, 250); }
             else { ultimoOK = false; porSintesis((e && (e.name + ': ' + e.message)) || 'rechazado'); }
           });
         } else verificar();
