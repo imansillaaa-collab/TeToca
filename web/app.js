@@ -285,7 +285,7 @@
     const esp = esCaja ? T.minutosDesde(t.pasoCaja, llam) : null;
     return `<div class="fila"><span class="tit">${esCaja ? 'COBRANDO AHORA' : 'ATENDIENDO AHORA'}</span>
         <span class="pill ${esCaja ? 'p-caja' : 'p-mesa'}">Llamado ${hhmm(llam)}</span></div>
-      <div><div class="grande num">${esc(t.precarga || '—')}</div><div class="nomg">${esc(nom(t.nombre))}</div>
+      <div><div class="nomg">${esc(nom(t.nombre))}</div><div class="preg"><small>PRECARGA</small><span class="num">${esc(t.precarga || '—')}</span></div>
         ${cantTr(t) > 1 || dosReg() ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap">${chipsReg(t)}${cantTr(t) > 1 ? `<span style="font-size:13px;font-weight:700;color:var(--ink2)">${cantTr(t)} trámites</span>` : ''}</div>` : ''}</div>
       <div class="datos">
         ${esCaja ? `<div><small>DOMINIO</small><b>${esc(cantTr(t) > 1 ? 'Ver abajo' : (t.dominio || '—'))}</b></div><div><small>DE MESA</small><b>${hhmm(t.pasoCaja) || '—'}</b></div><div><small>ESPERÓ</small><b>${esp == null ? '—' : esp + ' min'}</b></div>`
@@ -336,7 +336,7 @@
     const sig = turnos().find((t) => t.estado === 'pendiente');
     $('mSig').innerHTML = `<button class="sig azul" id="bSig" ${yo || !sig ? 'disabled' : ''}>
       <span class="ic">${I.parlante('#fff')}</span>
-      <span style="flex:1"><span class="t1">Llamar siguiente</span><span class="t2">${sig ? esc((sig.precarga ? preCorta(sig) + ' · ' : '') + nom(sig.nombre) + ' · ' + sig.hora) : 'No quedan turnos pendientes'}</span></span>
+      <span style="flex:1"><span class="t1">Llamar siguiente</span><span class="t2">${sig ? esc(nom(sig.nombre) + (sig.precarga ? ' · ' + preCorta(sig) : '') + ' · ' + sig.hora) : 'No quedan turnos pendientes'}</span></span>
       <span class="kbd">ESPACIO</span></button>`;
     $('bSig').onclick = siguiente;
     const aus = turnos().filter((t) => t.estado === 'ausente' && t.ausenteEn !== 'caja').sort((a, b) => new Date(b.ausenteA) - new Date(a.ausenteA));
@@ -427,7 +427,7 @@
     const sig = fila[0];
     $('cSig').innerHTML = `<button class="sig amarillo" id="bSig" ${yo || !sig ? 'disabled' : ''}>
       <span class="ic">${I.parlante('#16181D')}</span>
-      <span style="flex:1"><span class="t1">Llamar siguiente</span><span class="t2">${sig ? esc((sig.precarga ? preCorta(sig) + ' · ' : '') + nom(sig.nombre) + ' · llegó ' + hhmm(sig.pasoCaja)) : 'No hay nadie esperando'}</span></span>
+      <span style="flex:1"><span class="t1">Llamar siguiente</span><span class="t2">${sig ? esc(nom(sig.nombre) + (sig.precarga ? ' · ' + preCorta(sig) : '') + ' · llegó ' + hhmm(sig.pasoCaja)) : 'No hay nadie esperando'}</span></span>
       <span class="kbd">ESPACIO</span></button>`;
     $('bSig').onclick = siguiente;
     $('cCant').textContent = fila.length + ' esperando';

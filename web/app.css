@@ -56,8 +56,11 @@ main{flex:1;min-height:0;padding:22px;display:grid;grid-template-columns:440px m
 .p-pendiente{background:var(--pendBg);color:var(--pendFg)}.p-mesa{background:var(--mesaBg);color:var(--mesaFg)}
 .p-espera_caja,.p-caja{background:var(--cajaBg);color:var(--cajaFg)}.p-terminado{background:var(--okBg);color:var(--okFg)}
 .p-ausente,.p-cancelado{background:var(--ausBg);color:var(--ausFg)}
-.grande{font-size:40px;font-weight:700;line-height:1;letter-spacing:.01em}
-.nomg{font-size:22px;font-weight:800;margin-top:8px}
+/* "Atendiendo ahora": primero el nombre, bien grande; la precarga abajo, más chica */
+.nomg{font-size:32px;font-weight:800;line-height:1.12;letter-spacing:-.01em;word-wrap:break-word}
+.preg{display:flex;align-items:baseline;gap:8px;margin-top:8px}
+.preg small{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted)}
+.preg .num{font-size:22px;font-weight:700;color:var(--ink2)}
 .datos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;background:var(--sub);border-radius:12px;padding:12px 14px}
 .datos small{display:block;font-size:11px;color:var(--muted);font-weight:600}
 .datos b{display:block;font-size:15px;margin-top:2px}
@@ -179,8 +182,8 @@ body.oscuro .sw{background:#34415C}
 }
 @media (max-height:800px){
   .pad{padding:16px 18px}
-  .grande{font-size:34px}
-  .nomg{font-size:19px;margin-top:4px}
+  .nomg{font-size:27px}
+  .preg .num{font-size:19px}
   .btn.prim{height:50px}
   .btn{height:42px}
   .sig{padding:14px 18px}

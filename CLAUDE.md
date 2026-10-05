@@ -60,7 +60,7 @@ cortos, nombres muy largos, llamado a caja y sala sin llamados.
 - "Diríjase a …" en una franja de punta a punta: celeste = mesa, amarilla = caja (`--chipM` / `--chipC`).
 - El punto verde de "Llamando ahora" tiene una onda que sale siempre hacia afuera y se desvanece; al usuario no le gusta que vuelva hacia el centro (1.0.19).
 - Títulos en minúscula normal (nada de MAYÚSCULAS espaciadas). Al usuario le gusta lo celeste y blanco / argentino.
-- Las pantallas de PC (mesa, caja, configuración) todavía tienen el diseño anterior.
+- Las pantallas de PC (mesa, caja, configuración) todavía tienen el diseño anterior. En "Atendiendo ahora" / "Cobrando ahora" el **nombre va más grande que la precarga** (pedido del usuario, 1.0.21); en "Llamar siguiente" también va primero el nombre.
 
 ## Compilar y publicar
 
@@ -75,7 +75,7 @@ Necesita Go 1.20.x, `goversioninfo` (github.com/josephspurrier/goversioninfo), g
 
 - Las notas de versión las lee el usuario en el cartel de "Hay una actualización": escribirlas para él.
 - GitHub raw tarda ~5 minutos en mostrar la versión nueva.
-- Se le sugirió poner su oficina en el canal **prueba** (no está confirmado). Última versión publicada: 1.0.20 (canal general).
+- Se le sugirió poner su oficina en el canal **prueba** (no está confirmado). Última versión publicada: 1.0.21 (canal general).
 - Mensajes de commit: `1.0.N: qué cambió` en español.
 
 ## PDFs (venta y guía para el equipo)
@@ -84,6 +84,7 @@ No están en este repo (es público). El usuario tiene la carpeta `TeToca-materi
 `venta_registros.py`, `guia_equipo.py`, `base.py`, letras y capturas con datos inventados; ver su `LEEME.md`.
 Se generan con reportlab. Las capturas se sacan de `./build/demo.sh` (en el PDF de venta: seccional
 "Tu Registro Seccional", registros "Reg. 1"/"Reg. 2"; nunca el nombre del registro del usuario ni la DNRPA).
+En el PDF de venta, todo lo de cargar dos archivos tiene que aclarar que es **solo si en la oficina funcionan dos registros con la misma mesa de entradas**.
 La guía para el equipo todavía tiene capturas del TV viejo (antes de la 1.0.17).
 
 ## Pendiente / a confirmar en la oficina
