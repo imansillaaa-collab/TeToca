@@ -77,9 +77,12 @@ body.t-sol .solfondo{display:block;opacity:.24}
 @-webkit-keyframes fl{0%,100%{background:var(--card)}50%{background:var(--flash)}}
 @keyframes fl{0%,100%{background:var(--card)}50%{background:var(--flash)}}
 .etq{display:flex;align-items:center;font-size:3vh;font-weight:700;color:var(--mut)}
-.pulso{width:1.7vh;height:1.7vh;border-radius:50%;background:#45D483;margin-right:1.3vh;-webkit-animation:pu 1.4s ease-in-out infinite;animation:pu 1.4s ease-in-out infinite}
-@-webkit-keyframes pu{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(69,212,131,.55)}50%{opacity:.35;box-shadow:0 0 0 1.3vh rgba(69,212,131,0)}}
-@keyframes pu{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(69,212,131,.55)}50%{opacity:.35;box-shadow:0 0 0 1.3vh rgba(69,212,131,0)}}
+/* Punto verde fijo con una onda que sale siempre de adentro hacia afuera y se desvanece
+   (nunca vuelve hacia el centro) */
+.pulso{position:relative;width:1.7vh;height:1.7vh;border-radius:50%;background:#45D483;margin:0 2.2vh 0 .9vh;flex-shrink:0}
+.pulso:after{content:"";position:absolute;left:0;top:0;width:100%;height:100%;border-radius:50%;background:#45D483;-webkit-animation:onda 1.6s ease-out infinite;animation:onda 1.6s ease-out infinite}
+@-webkit-keyframes onda{0%{opacity:.7;-webkit-transform:scale(1)}100%{opacity:0;-webkit-transform:scale(3)}}
+@keyframes onda{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(3)}}
 /* El nombre en letra angosta: entra más grande en una línea y se lee de lejos */
 .nom .l{display:block;white-space:nowrap}
 .nom{margin-top:2.2vh;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:13vh;font-weight:800;line-height:.98;text-transform:uppercase;max-width:100%;word-wrap:break-word}
@@ -173,7 +176,12 @@ body.t-sol .solfondo{display:block;opacity:.24}
     }
   }
   // cuando terminan de cargar las letras se vuelve a medir (antes mide con otra letra)
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { ajustar($('nomActual')); });
+  // (se pide la letra del nombre explícitamente: si no, a veces se mide con otra más ancha y queda chico)
+  if (document.fonts && document.fonts.load) {
+    var refit = function () { ajustar($('nomActual')); };
+    document.fonts.load('800 50px "Barlow Condensed"').then(refit, refit);
+    document.fonts.load('700 50px "Barlow Condensed"').then(refit, refit);
+  }
   // "PEREZ, MARIA LAURA": apellido en un renglón y nombres en el otro
   function nombreEnDos(n) {
     var i = n.indexOf(',');
