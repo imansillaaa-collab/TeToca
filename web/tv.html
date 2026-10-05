@@ -89,8 +89,13 @@ body.t-sol .solfondo{display:block;opacity:.24}
 /* El dominio va en una patente, el objeto que todos en la sala conocen */
 /* La franja azul llega de borde a borde: sin marco, el contorno lo da una sombra fina */
 .placa{margin-top:4.2vh;display:inline-block;align-self:flex-start;background:#FBFBF8;border-radius:1.4vh;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.18),0 1.2vh 3vh rgba(0,0,0,.28)}
-.placa .pb{display:flex;align-items:center;justify-content:space-between;background:#1D4FA3;color:#fff;font-size:1.9vh;font-weight:700;letter-spacing:.14em;padding:.9vh 1.8vh .85vh 2.2vh}
-.placa .bandera{display:block;width:3.4vh;height:2.2vh;margin-left:3vh;border-radius:.3vh;background:linear-gradient(#74ACDF 0,#74ACDF 33.3%,#fff 33.3%,#fff 66.6%,#74ACDF 66.6%)}
+/* Franja como la chapa Mercosur: "DOMINIO" chiquito a la izquierda, REPÚBLICA ARGENTINA al centro, bandera a la derecha */
+.placa .pb{display:flex;align-items:center;background:#1D4FA3;color:#fff;padding:.7vh 1.6vh}
+.placa .pb .ld,.placa .pb .bw{width:8vh;flex-shrink:0}
+.placa .pb .ld{font-size:1.3vh;font-weight:700;letter-spacing:.12em;opacity:.8}
+.placa .pb .ra{-webkit-box-flex:1;flex:1;text-align:center;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:2.7vh;font-weight:700;letter-spacing:.06em;line-height:1;white-space:nowrap;padding:0 1.4vh}
+.placa .pb .bw{display:flex;justify-content:flex-end}
+.placa .bandera{display:block;width:3.6vh;height:2.4vh;border-radius:.3vh;background:linear-gradient(#74ACDF 0,#74ACDF 33.3%,#fff 33.3%,#fff 66.6%,#74ACDF 66.6%)}
 .placa .pn{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:11.5vh;font-weight:700;line-height:1;color:#12161E;letter-spacing:.06em;padding:.6vh 3.6vh 1vh;white-space:nowrap;text-align:center}
 /* Adónde ir: una franja de punta a punta, del color de cada lugar */
 .destino{display:flex;align-items:center;padding:3vh 3.6vw;color:var(--chipTxt);flex-shrink:0}
@@ -219,7 +224,7 @@ body.t-sol .solfondo{display:block;opacity:.24}
       var t = porId[ultimo.turnoId];
       var html = '<div class="arriba"><div class="etq"><span class="pulso"></span>Llamando ahora</div>' +
         '<div class="nom" id="nomActual">' + nombreEnDos(T.nombre(t.nombre)) + '</div>' +
-        (patente(t.dominio) ? '<div class="placa"><div class="pb"><span>DOMINIO</span><i class="bandera"></i></div><div class="pn">' + T.esc(patente(t.dominio)) + '</div></div>' : '') +
+        (patente(t.dominio) ? '<div class="placa"><div class="pb"><span class="ld">DOMINIO</span><span class="ra">REPÚBLICA ARGENTINA</span><span class="bw"><i class="bandera"></i></span></div><div class="pn">' + T.esc(patente(t.dominio)) + '</div></div>' : '') +
         '</div><div class="destino ' + (ultimo.dest === 'caja' ? 'caja' : 'mesa') + '">' + FLECHA + '<span class="dl">Diríjase a</span><b>' + T.esc(ultimo.destino) + '</b></div>';
       // solo se vuelve a dibujar si cambió algo (así la entrada no se repite sola)
       if (html !== mostrado) {

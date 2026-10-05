@@ -56,7 +56,7 @@ cortos, nombres muy largos, llamado a caja y sala sin llamados.
 ## Diseño del TV (1.0.18)
 
 - Nombre en Barlow Condensed, mayúsculas, apellido en un renglón y nombres en otro; se achica solo hasta entrar (`ajustar()`).
-- El **dominio** del auto va en una **patente** (blanca, franja azul de borde a borde, banderita), con espacios como en la chapa ("AB 123 CD"). La precarga NO va en el llamado actual: se ve en "Últimos llamados" y "No se presentaron" (pedido del usuario, 1.0.18). La patente es el sello visual, no repetir el recurso en otro lado.
+- El **dominio** del auto va en una **patente** como la chapa Mercosur (blanca, franja azul de borde a borde con "DOMINIO" chiquito a la izquierda, "REPÚBLICA ARGENTINA" al centro y la bandera a la derecha; 1.0.20), con espacios como en la chapa ("AB 123 CD"). La precarga NO va en el llamado actual: se ve en "Últimos llamados" y "No se presentaron" (pedido del usuario, 1.0.18). La patente es el sello visual, no repetir el recurso en otro lado.
 - "Diríjase a …" en una franja de punta a punta: celeste = mesa, amarilla = caja (`--chipM` / `--chipC`).
 - El punto verde de "Llamando ahora" tiene una onda que sale siempre hacia afuera y se desvanece; al usuario no le gusta que vuelva hacia el centro (1.0.19).
 - Títulos en minúscula normal (nada de MAYÚSCULAS espaciadas). Al usuario le gusta lo celeste y blanco / argentino.
@@ -75,7 +75,7 @@ Necesita Go 1.20.x, `goversioninfo` (github.com/josephspurrier/goversioninfo), g
 
 - Las notas de versión las lee el usuario en el cartel de "Hay una actualización": escribirlas para él.
 - GitHub raw tarda ~5 minutos en mostrar la versión nueva.
-- Se le sugirió poner su oficina en el canal **prueba** (no está confirmado). Última versión publicada: 1.0.19 (canal general).
+- Se le sugirió poner su oficina en el canal **prueba** (no está confirmado). Última versión publicada: 1.0.20 (canal general).
 - Mensajes de commit: `1.0.N: qué cambió` en español.
 
 ## PDFs (venta y guía para el equipo)
