@@ -53,10 +53,10 @@ Al cambiar el diseño del TV, revisar **todos los temas** (noche, celeste, albic
 contraste, verde) a **1920×1080 y 1280×720** (el Chromecast suele mostrar a 720p), con nombres
 cortos, nombres muy largos, llamado a caja y sala sin llamados.
 
-## Diseño del TV (1.0.17)
+## Diseño del TV (1.0.18)
 
 - Nombre en Barlow Condensed, mayúsculas, apellido en un renglón y nombres en otro; se achica solo hasta entrar (`ajustar()`).
-- La precarga va en una **patente** (blanca, franja azul, banderita): es el sello visual, no repetir el recurso en otro lado.
+- El **dominio** del auto va en una **patente** (blanca, franja azul de borde a borde, banderita), con espacios como en la chapa ("AB 123 CD"). La precarga NO va en el llamado actual: se ve en "Últimos llamados" y "No se presentaron" (pedido del usuario, 1.0.18). La patente es el sello visual, no repetir el recurso en otro lado.
 - "Diríjase a …" en una franja de punta a punta: celeste = mesa, amarilla = caja (`--chipM` / `--chipC`).
 - Títulos en minúscula normal (nada de MAYÚSCULAS espaciadas). Al usuario le gusta lo celeste y blanco / argentino.
 - Las pantallas de PC (mesa, caja, configuración) todavía tienen el diseño anterior.
@@ -74,7 +74,7 @@ Necesita Go 1.20.x, `goversioninfo` (github.com/josephspurrier/goversioninfo), g
 
 - Las notas de versión las lee el usuario en el cartel de "Hay una actualización": escribirlas para él.
 - GitHub raw tarda ~5 minutos en mostrar la versión nueva.
-- Se le sugirió poner su oficina en el canal **prueba** (no está confirmado). Última versión publicada: 1.0.17 (canal general).
+- Se le sugirió poner su oficina en el canal **prueba** (no está confirmado). Última versión publicada: 1.0.18 (canal general).
 - Mensajes de commit: `1.0.N: qué cambió` en español.
 
 ## Pendiente / a confirmar en la oficina

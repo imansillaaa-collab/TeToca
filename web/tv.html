@@ -44,7 +44,7 @@ body.t-verde{--topSecc:#F6C667;--bg:#F1F7F4;--txt:#12352D;--mut:#5E7F76;--top:#1
  --tagMb:#DDF1EA;--tagMf:#1D6B5A;--tagCb:#FDF0CF;--tagCf:#8A5A00;--tagAb:#FBE6E4;--tagAf:#A2332A;
  --ausB:#FDF4F2;--ausBd:#F0D0CB;--ausT:#A2332A;--ausI:#F5E0DC;--ausH:#A57A74;--pie:#1D6B5A;--pieTxt:#CFE8E1;--pieDot:#7FD1B9}
 body.t-contraste .actual{border-width:3px}
-body.t-contraste .placa{border-color:#FFE600}
+body.t-contraste .placa{box-shadow:0 0 0 .4vh #FFE600}
 
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"Plus Jakarta Sans",Arial,sans-serif;overflow:hidden;cursor:none}
@@ -83,9 +83,10 @@ body.t-sol .solfondo{display:block;opacity:.24}
 /* El nombre en letra angosta: entra más grande en una línea y se lee de lejos */
 .nom .l{display:block;white-space:nowrap}
 .nom{margin-top:2.2vh;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:13vh;font-weight:800;line-height:.98;text-transform:uppercase;max-width:100%;word-wrap:break-word}
-/* La precarga va en una patente, el objeto que todos en la sala conocen */
-.placa{margin-top:4.2vh;display:inline-block;align-self:flex-start;background:#FBFBF8;border:.55vh solid #12161E;border-radius:1.6vh;overflow:hidden;box-shadow:0 1.2vh 3vh rgba(0,0,0,.28)}
-.placa .pb{display:flex;align-items:center;justify-content:space-between;background:#1D4FA3;color:#fff;font-size:1.9vh;font-weight:700;letter-spacing:.14em;padding:.75vh 1.6vh .7vh 1.8vh}
+/* El dominio va en una patente, el objeto que todos en la sala conocen */
+/* La franja azul llega de borde a borde: sin marco, el contorno lo da una sombra fina */
+.placa{margin-top:4.2vh;display:inline-block;align-self:flex-start;background:#FBFBF8;border-radius:1.4vh;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.18),0 1.2vh 3vh rgba(0,0,0,.28)}
+.placa .pb{display:flex;align-items:center;justify-content:space-between;background:#1D4FA3;color:#fff;font-size:1.9vh;font-weight:700;letter-spacing:.14em;padding:.9vh 1.8vh .85vh 2.2vh}
 .placa .bandera{display:block;width:3.4vh;height:2.2vh;margin-left:3vh;border-radius:.3vh;background:linear-gradient(#74ACDF 0,#74ACDF 33.3%,#fff 33.3%,#fff 66.6%,#74ACDF 66.6%)}
 .placa .pn{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:11.5vh;font-weight:700;line-height:1;color:#12161E;letter-spacing:.06em;padding:.6vh 3.6vh 1vh;white-space:nowrap;text-align:center}
 /* Adónde ir: una franja de punta a punta, del color de cada lugar */
@@ -103,7 +104,7 @@ body.t-sol .solfondo{display:block;opacity:.24}
 .espera b{display:block;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:10vh;font-weight:700;line-height:1;text-transform:uppercase}
 .espera span{display:block;margin-top:2.4vh;font-size:3vh;color:var(--mut);font-weight:500}
 .col{-webkit-box-flex:1;flex:1 1 0;min-width:0;display:flex;flex-direction:column;min-height:0}
-.panel{background:var(--panel);border:1px solid var(--panelB);border-radius:3vh;padding:2.8vh 2.1vw 1.4vh;overflow:hidden}
+.panel{background:var(--panel);border:1px solid var(--panelB);border-radius:3vh;padding:2.6vh 2.1vw 1.6vh;overflow:hidden}
 .panel h3{font-size:2.6vh;font-weight:700;color:var(--mut);margin-bottom:1vh}
 .item{display:flex;align-items:center;padding:.95vh 0;border-top:1px solid var(--itemB)}
 .item .txt{-webkit-box-flex:1;flex:1;min-width:0;margin-right:1.2vw}
@@ -115,10 +116,8 @@ body.t-sol .solfondo{display:block;opacity:.24}
 .hora{font-size:1.85vh;color:var(--hora);margin-top:.7vh}
 .aus{margin-top:2vh;background:var(--ausB);border-color:var(--ausBd)}
 .aus h3{color:var(--ausT)}
-.aus .item{border-top-color:var(--ausI);padding:.8vh 0}
-.aus .n{font-size:3.3vh}
-.aus .tag{font-size:1.6vh;padding:.4vh 1.1vh;margin-right:1vw}
-.aus .hora{margin-top:0;color:var(--ausH)}
+.aus .item{border-top-color:var(--ausI)}
+.aus .hora{color:var(--ausH)}
 .vacio{color:var(--vacio);font-size:2.2vh;padding:1vh 0}
 .pie{height:7vh;display:flex;align-items:center;justify-content:center;font-size:2.2vh;color:var(--pieTxt);background:var(--pie);border-top:1px solid var(--topB);flex-shrink:0}
 .pie i{display:inline-block;width:.6vh;height:.6vh;border-radius:50%;background:var(--pieDot);margin:0 2.6vh}
@@ -181,6 +180,16 @@ body.t-sol .solfondo{display:block;opacity:.24}
     if (i < 0) return T.esc(n);
     return '<span class="l">' + T.esc(n.slice(0, i + 1)) + '</span><span class="l">' + T.esc(n.slice(i + 1).replace(/^\s+/, '')) + '</span>';
   }
+  // "AB123CD" → "AB 123 CD" y "ABC123" → "ABC 123", como se ven en la chapa
+  function patente(d) {
+    d = String(d || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (d.length < 5) return '';
+    var m = d.match(/^([A-Z]{2})(\d{3})([A-Z]{2})$/);
+    if (m) return m[1] + ' ' + m[2] + ' ' + m[3];
+    m = d.match(/^([A-Z]{3})(\d{3})$/);
+    if (m) return m[1] + ' ' + m[2];
+    return d;
+  }
   var FLECHA = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="currentColor" opacity=".16"/><path d="M14 24h19M25 15l9 9-9 9" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var mostrado = '';
 
@@ -202,7 +211,7 @@ body.t-sol .solfondo{display:block;opacity:.24}
       var t = porId[ultimo.turnoId];
       var html = '<div class="arriba"><div class="etq"><span class="pulso"></span>Llamando ahora</div>' +
         '<div class="nom" id="nomActual">' + nombreEnDos(T.nombre(t.nombre)) + '</div>' +
-        (t.precarga ? '<div class="placa"><div class="pb"><span>PRECARGA</span><i class="bandera"></i></div><div class="pn">' + T.esc(t.precarga) + '</div></div>' : '') +
+        (patente(t.dominio) ? '<div class="placa"><div class="pb"><span>DOMINIO</span><i class="bandera"></i></div><div class="pn">' + T.esc(patente(t.dominio)) + '</div></div>' : '') +
         '</div><div class="destino ' + (ultimo.dest === 'caja' ? 'caja' : 'mesa') + '">' + FLECHA + '<span class="dl">Diríjase a</span><b>' + T.esc(ultimo.destino) + '</b></div>';
       // solo se vuelve a dibujar si cambió algo (así la entrada no se repite sola)
       if (html !== mostrado) {
@@ -239,7 +248,8 @@ body.t-sol .solfondo{display:block;opacity:.24}
     h = '';
     for (i = 0; i < ausentes.length; i++) {
       var a = ausentes[i];
-      h += '<div class="item"><div class="txt"><div class="n">' + T.esc(T.nombre(a.nombre)) + '</div></div><span class="tag ' + (a.ausenteEn === 'caja' ? 'caja' : 'mesa') + '">' + (a.ausenteEn === 'caja' ? 'CAJA' : 'MESA') + '</span><span class="hora">' + T.hhmm(a.ausenteA) + '</span></div>';
+      h += '<div class="item"><div class="txt"><div class="n">' + T.esc(T.nombre(a.nombre)) + '</div>' + (a.precarga ? '<div class="p">' + T.esc(a.precarga) + '</div>' : '') + '</div>' +
+        '<div class="der"><span class="tag ' + (a.ausenteEn === 'caja' ? 'caja' : 'mesa') + '">' + (a.ausenteEn === 'caja' ? 'CAJA' : 'MESA') + '</span><span class="hora">' + T.hhmm(a.ausenteA) + '</span></div></div>';
     }
     $('ausentes').innerHTML = h || '<div class="vacio">Nadie por ahora.</div>';
 
