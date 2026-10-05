@@ -78,6 +78,14 @@ Necesita Go 1.20.x, `goversioninfo` (github.com/josephspurrier/goversioninfo), g
 - Se le sugirió poner su oficina en el canal **prueba** (no está confirmado). Última versión publicada: 1.0.19 (canal general).
 - Mensajes de commit: `1.0.N: qué cambió` en español.
 
+## PDFs (venta y guía para el equipo)
+
+No están en este repo (es público). El usuario tiene la carpeta `TeToca-materiales` (zip) con
+`venta_registros.py`, `guia_equipo.py`, `base.py`, letras y capturas con datos inventados; ver su `LEEME.md`.
+Se generan con reportlab. Las capturas se sacan de `./build/demo.sh` (en el PDF de venta: seccional
+"Tu Registro Seccional", registros "Reg. 1"/"Reg. 2"; nunca el nombre del registro del usuario ni la DNRPA).
+La guía para el equipo todavía tiene capturas del TV viejo (antes de la 1.0.17).
+
 ## Pendiente / a confirmar en la oficina
 
 - Sonido del TV: en la 1.0.16 TeToca sube el volumen del Chromecast al 100% y los sonidos se rehicieron

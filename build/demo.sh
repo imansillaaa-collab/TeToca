@@ -18,8 +18,14 @@ echo '{"modo":"central","pc":"CENTRAL"}' > $D/datos/esta-pc.json
 echo '{"oficina":"Registro Automotor","seccional":"Azul 1 y 2","registros":["Azul 1","Azul 2"],"temaTV":"noche","sonido":"dingdong","pcs":{}}' > $D/datos/config.json
 ( cd $D && { ./$EXE --sinventana > salida.txt 2>&1 & echo $! > pid; } )
 for i in $(seq 1 40); do curl -s -o /dev/null $B/api/estado && break; sleep 0.25; done
-curl -s -o /dev/null -F archivo=@build/demo/registro1.xls -F registro=1 $B/api/cargar
-curl -s -o /dev/null -F archivo=@build/demo/registro2.xls -F registro=2 $B/api/cargar
+# los archivos de ejemplo se cargan con la fecha de hoy, para que no salga el aviso de "turnos viejos"
+HOY=$(date +%d/%m/%Y)
+for n in 1 2; do
+  sed -E "s#[0-9]{2}/[0-9]{2}/20[0-9]{2}#$HOY#g" build/demo/registro$n.xls > $D/registro$n.xls
+  curl -s -o /dev/null -F archivo=@$D/registro$n.xls -F registro=$n $B/api/cargar
+done
+p() { curl -s -o /dev/null -H 'Content-Type: application/json' -d "{\"pc\":\"$1\",\"rol\":\"$2\"}" $B/api/pc; }
+p MESA-1 mesa; p CAJA caja
 a() { curl -s -o /dev/null -H 'Content-Type: application/json' -d "{\"accion\":\"$1\",\"pc\":\"$2\"}" $B/api/accion; }
 for i in 1 2 3 4; do a mesa_siguiente MESA-1; a pasar_caja MESA-1; done
 a caja_siguiente CAJA; a mesa_siguiente MESA-1; a ausente MESA-1; a mesa_siguiente MESA-1
