@@ -13,7 +13,8 @@ parar() { [ -f $D/pid ] && kill "$(cat $D/pid)" 2>/dev/null || true; rm -f $D/pi
 parar
 [ "${1:-}" = "parar" ] && { echo "Demo detenida."; exit 0; }
 rm -rf $D/datos; mkdir -p $D/datos
-go build -o $D/$EXE .
+# versión alta para que la demo no muestre el cartel de "Hay una actualización"
+go build -ldflags "-X main.Version=99.0.0" -o $D/$EXE .
 echo '{"modo":"central","pc":"CENTRAL"}' > $D/datos/esta-pc.json
 echo '{"oficina":"Registro Automotor","seccional":"Azul 1 y 2","registros":["Azul 1","Azul 2"],"temaTV":"noche","sonido":"dingdong","pcs":{}}' > $D/datos/config.json
 ( cd $D && { ./$EXE --sinventana > salida.txt 2>&1 & echo $! > pid; } )
