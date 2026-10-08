@@ -61,6 +61,7 @@ cortos, nombres muy largos, llamado a caja y sala sin llamados.
 - El punto verde de "Llamando ahora" tiene una onda que sale siempre hacia afuera y se desvanece; al usuario no le gusta que vuelva hacia el centro (1.0.19).
 - Títulos en minúscula normal (nada de MAYÚSCULAS espaciadas). Al usuario le gusta lo celeste y blanco / argentino.
 - Las pantallas de PC (mesa, caja, configuración) todavía tienen el diseño anterior. En "Atendiendo ahora" / "Cobrando ahora" el **nombre va más grande que la precarga** (pedido del usuario, 1.0.21); en "Llamar siguiente" también va primero el nombre.
+- Mesa (1.0.22): al tocar a alguien de la lista se abre un cartel con Llamar / Volver / "Terminar sin llamar" (con confirmación; no pasa por el TV ni por caja: el usuario dice que en ese caso no paga). Desde Terminados se lo vuelve a pendiente. Acción `terminar_sin_llamar` en `state.go`.
 
 ## Compilar y publicar
 
@@ -75,7 +76,7 @@ Necesita Go 1.20.x, `goversioninfo` (github.com/josephspurrier/goversioninfo), g
 
 - Las notas de versión las lee el usuario en el cartel de "Hay una actualización": escribirlas para él.
 - GitHub raw tarda ~5 minutos en mostrar la versión nueva.
-- Se le sugirió poner su oficina en el canal **prueba** (no está confirmado). Última versión publicada: 1.0.21 (canal general).
+- Se le sugirió poner su oficina en el canal **prueba** (no está confirmado). Última versión publicada: 1.0.22 (canal general).
 - Mensajes de commit: `1.0.N: qué cambió` en español.
 
 ## PDFs (venta y guía para el equipo)

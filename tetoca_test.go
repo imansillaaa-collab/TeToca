@@ -201,6 +201,41 @@ func TestImportarCSVConAcentosRotos(t *testing.T) {
 	}
 }
 
+func TestTerminarSinLlamar(t *testing.T) {
+	store = NewStore(t.TempDir())
+	ts, _, _ := Importar([]byte(xlsPrueba))
+	store.Cargar(ts, "28/09/2026", "x.xls", "1")
+	// la PC tiene a alguien llamado y aun así puede terminar a otro sin llamarlo
+	if err := store.Accion("mesa_siguiente", "m1", ""); err != nil {
+		t.Fatal(err)
+	}
+	llamados := len(store.E.Llamados)
+	var otro *Turno
+	for _, x := range store.E.Turnos {
+		if x.Estado == EstPendiente {
+			otro = x
+			break
+		}
+	}
+	if otro == nil {
+		t.Fatal("no hay pendientes para probar")
+	}
+	if err := store.Accion("terminar_sin_llamar", "m1", otro.ID); err != nil {
+		t.Fatal(err)
+	}
+	if otro.Estado != EstTerminado || len(store.E.Llamados) != llamados || store.actualDe("m1") == nil {
+		t.Fatalf("estado %s, llamados %d→%d", otro.Estado, llamados, len(store.E.Llamados))
+	}
+	// no se puede terminar así a quien está en mesa
+	if err := store.Accion("terminar_sin_llamar", "m2", store.actualDe("m1").ID); err == nil {
+		t.Fatal("terminó a alguien que estaba siendo atendido")
+	}
+	// y se puede deshacer
+	if err := store.Accion("volver_pendiente", "m1", otro.ID); err != nil || otro.Estado != EstPendiente {
+		t.Fatal("no volvió a pendiente")
+	}
+}
+
 func TestFlujoMesaCaja(t *testing.T) {
 	store = NewStore(t.TempDir())
 	ts, _, _ := Importar([]byte(xlsPrueba))
