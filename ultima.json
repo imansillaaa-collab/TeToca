@@ -1,0 +1,6 @@
+{
+ "version": "1.0.22",
+ "notas": "Ahora se puede terminar el trámite de alguien sin llamarlo: tocá su nombre en la lista y elegí \"Terminar sin llamar\". No aparece en el TV. Si te equivocaste, buscalo en Terminados y volvelo a pendiente.",
+ "sha256": "00bbd8d257648400a46ef4598d7848e114bfa074d973e3a9eef47814ed9df80c",
+ "archivo": "TeToca.exe"
+}
