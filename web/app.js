@@ -384,9 +384,27 @@
     if (t.estado === 'mesa' || t.estado === 'caja') { toast(nom(t.nombre) + ' ya lo está atendiendo ' + etiquetaPC(t.pc) + '.'); return; }
     if (t.estado === 'espera_caja') { toast(nom(t.nombre) + ' está en la fila de caja.'); return; }
     if (t.estado === 'ausente' && t.ausenteEn === 'caja') { toast(nom(t.nombre) + ' quedó ausente en caja: lo llama la caja.'); return; }
-    if (yo) { toast('Primero indicá qué pasó con ' + nom(yo.nombre) + '.', true); return; }
-    const extra = t.estado === 'terminado' ? ' Ya figura como terminado.' : '';
-    confirmar('¿Llamar a esta persona?', `<strong style="color:var(--ink)">${esc(nom(t.nombre))}</strong> · precarga ${esc(preCorta(t))}${cantTr(t) > 1 ? ' (' + cantTr(t) + ' trámites)' : ''} · turno ${esc(t.hora)}.${extra}`, 'Llamar', () => accion('mesa_llamar', t.id));
+    menuTurno(t, yo);
+  }
+  // Lo que se puede hacer con una persona de la lista: llamarla o terminarla sin llamar
+  // (por ejemplo, si ya se la atendió en el mostrador). Si ya terminó, volverla a pendiente.
+  function menuTurno(t, yo) {
+    const fin = t.estado === 'terminado';
+    const det = `Precarga ${esc(preCorta(t))}${cantTr(t) > 1 ? ' (' + cantTr(t) + ' trámites)' : ''} · turno ${esc(t.hora)}.`;
+    const datos = `<strong style="color:var(--ink)">${esc(nom(t.nombre))}</strong> · ${det.charAt(0).toLowerCase() + det.slice(1)}`;
+    const aviso = yo ? `<div class="nota-modal">Para llamarla, primero indicá qué pasó con <b>${esc(nom(yo.nombre))}</b>.</div>` : '';
+    modal(`<h3>${esc(nom(t.nombre))}</h3><p>${det}${fin ? ' Ya figura como <b>terminado</b>.' : ''}</p>${aviso}
+      <button class="btn prim" id="mLlamar" style="background:#2F6FDB;color:#fff" ${yo ? 'disabled' : ''}>${I.parlante('#fff')}Llamar</button>
+      <div class="grid2"><button class="btn" id="mNo">Volver</button>${fin
+        ? '<button class="btn" id="mPend">Volver a pendiente</button>'
+        : '<button class="btn verde-borde" id="mTerm">✓ Terminar sin llamar</button>'}</div>`);
+    $('mNo').onclick = () => modal('');
+    $('fondoModal').onclick = (e) => { if (e.target.id === 'fondoModal') modal(''); };
+    $('mLlamar').onclick = () => { modal(''); accion('mesa_llamar', t.id); };
+    if ($('mPend')) $('mPend').onclick = () => { modal(''); accion('volver_pendiente', t.id).then((r) => r && toast(nom(t.nombre) + ' volvió a pendientes.')); };
+    if ($('mTerm')) $('mTerm').onclick = () => confirmar('¿Terminar sin llamarlo?',
+      `${datos}<br><br>Sale de la lista de pendientes y no aparece en el TV. Si te equivocaste, lo encontrás en <b>Terminados</b> y lo podés volver a pendiente.`,
+      'Sí, terminar', () => accion('terminar_sin_llamar', t.id).then((r) => r && toast(nom(t.nombre) + ': terminado.')), 'verde');
   }
   function agregarManual() {
     modal(`<h3>Agregar turno a mano</h3><p>Para alguien que no está en el archivo del día.</p>

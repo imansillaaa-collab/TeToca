@@ -68,6 +68,8 @@ main{flex:1;min-height:0;padding:22px;display:grid;grid-template-columns:440px m
 .btn:hover:not(:disabled){filter:brightness(.97)}
 .btn.rojo{color:var(--danger);border-color:var(--dangerLine)}
 .btn.prim{height:56px;border:0;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn.verde-borde{color:#1D6B42;border-color:#9CCBB0}
+.nota-modal{background:var(--hl);color:var(--ink);border-radius:12px;padding:10px 14px;font-size:14px}
 .btn.amarillo{background:#FFC857;color:#16181D}.btn.verde{background:#1D6B42;color:#fff}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .link{background:none;border:0;padding:0;color:var(--muted);font-size:12px;text-decoration:underline;align-self:center}

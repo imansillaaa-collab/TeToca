@@ -350,6 +350,17 @@ func (s *Store) Accion(accion, pc, id string) error {
 			return UserErr{"No tenés a nadie llamado."}
 		}
 		actual.Estado, actual.PC, actual.Termino = EstTerminado, "", now
+	case "terminar_sin_llamar":
+		// Trámite resuelto sin llamarlo por el TV (por ejemplo, se atendió en el mostrador).
+		// No toca a quien tenga llamado esta PC ni aparece en el TV.
+		t := s.get(id)
+		if t == nil {
+			return UserErr{"No encontré ese turno."}
+		}
+		if !(t.Estado == EstPendiente || (t.Estado == EstAusente && t.AusenteEn == "mesa")) {
+			return UserErr{t.Nombre + " ya está siendo atendido, está en caja o ya terminó."}
+		}
+		t.Estado, t.PC, t.AusenteEn, t.Termino = EstTerminado, "", "", now
 	case "ausente":
 		if actual == nil {
 			return UserErr{"No tenés a nadie llamado."}
