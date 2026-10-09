@@ -220,6 +220,7 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 	mux.HandleFunc("/api/config", func(w http.ResponseWriter, r *http.Request) {
 		var q struct {
 			Sonido, Tema, Organismo, Oficina, TemaTV, Seccional, Canal *string
+			TVConexion, TVPC, TVPantalla                               *string
 			Registros                                                  *[]string
 			Ultimos, Ausentes, VolumenTV                               *int
 		}
@@ -276,6 +277,15 @@ func rutasCentral(mux *http.ServeMux, datos string) {
 			}
 			if q.Ausentes != nil && *q.Ausentes >= 0 && *q.Ausentes <= 6 {
 				c.Ausentes = *q.Ausentes
+			}
+			if q.TVConexion != nil && (*q.TVConexion == "" || *q.TVConexion == "hdmi") {
+				c.TVConexion = *q.TVConexion
+			}
+			if q.TVPC != nil && len(*q.TVPC) <= 40 {
+				c.TVPC = strings.TrimSpace(*q.TVPC)
+			}
+			if q.TVPantalla != nil && (*q.TVPantalla == "" || *q.TVPantalla == "1" || *q.TVPantalla == "2") {
+				c.TVPantalla = *q.TVPantalla
 			}
 			if q.VolumenTV != nil && *q.VolumenTV >= 0 && *q.VolumenTV <= 100 {
 				c.VolumenTV = *q.VolumenTV

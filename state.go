@@ -109,6 +109,11 @@ type Config struct {
 	// dispositivo enchufado al TV, se pone al 100% (el volumen real se maneja con
 	// el control remoto del TV); si es un TV con Chromecast integrado, no se toca.
 	VolumenTV int `json:"volumenTV"`
+	// Cómo llega la pantalla de sala al TV: "" = Chromecast, "hdmi" = cable HDMI a una PC
+	// que la muestra a pantalla completa (TVPC es esa PC; TVPantalla: "", "1" o "2").
+	TVConexion string `json:"tvConexion"`
+	TVPC       string `json:"tvPC"`
+	TVPantalla string `json:"tvPantalla"`
 }
 
 var temasTV = map[string]bool{"noche": true, "celeste": true, "albiceleste": true, "sol": true, "claro": true, "contraste": true, "verde": true}

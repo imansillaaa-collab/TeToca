@@ -68,6 +68,13 @@ main{flex:1;min-height:0;padding:22px;display:grid;grid-template-columns:440px m
 .btn:hover:not(:disabled){filter:brightness(.97)}
 .btn.rojo{color:var(--danger);border-color:var(--dangerLine)}
 .btn.prim{height:56px;border:0;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px}
+.conexion{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0 6px}
+.conexion button{text-align:left;padding:14px 16px;border-radius:14px;border:1.5px solid var(--btnLine);background:var(--card);color:var(--ink);display:flex;flex-direction:column;gap:4px}
+.conexion button b{font-size:16px}.conexion button small{font-size:13px;color:var(--muted);line-height:1.4}
+.conexion button.on{border-color:#2F6FDB;background:var(--hl);box-shadow:inset 0 0 0 1px #2F6FDB}
+.hdmi-ok{background:var(--okBg);color:var(--ink);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.5;margin:12px 0}
+.hdmi-ok ul{margin:6px 0 8px 20px}.hdmi-ok>span{color:var(--muted);font-size:13px}
+.kbd2{display:inline-block;border:1px solid var(--btnLine);border-radius:5px;padding:0 6px;font-size:12px;background:var(--card);color:var(--ink)}
 .btn.verde-borde{color:#1D6B42;border-color:#9CCBB0}
 .nota-modal{background:var(--hl);color:var(--ink);border-radius:12px;padding:10px 14px;font-size:14px}
 .btn.amarillo{background:#FFC857;color:#16181D}.btn.verde{background:#1D6B42;color:#fff}

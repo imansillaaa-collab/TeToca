@@ -476,6 +476,29 @@
 
   // ---------- CONFIGURACIÓN ----------
   let sonando = null;
+  function tvChromecast(c) {
+    return `<div class="campo"><label>Receptor</label><div class="segc"><button data-rec="dashcast" class="${(c.tv.receptor || 'dashcast') === 'dashcast' ? 'on' : ''}">DashCast (recomendado)</button><button data-rec="urlcast" class="${c.tv.receptor === 'urlcast' ? 'on' : ''}">URL Cast Receiver</button></div>
+          <a href="/tv" target="_blank" class="chico" style="text-decoration:none">Abrir pantalla de sala en el navegador</a></div>
+          <p class="nota" style="margin-top:6px">Si el TV se conecta pero no muestra la pantalla de sala, probá el otro receptor. Los dos son gratuitos.</p>
+          <div class="campo"><label>Sonido en el TV</label><button class="chico" id="cProbarTV">Probar sonido en el TV</button>
+            <span id="cTVSon" style="font-size:13px;line-height:1.4">${resultadoSonidoTV()}</span></div>
+          <div class="campo"><label>Volumen del Chromecast</label><div class="segc">${[[0, 'Automático'], [100, '100%'], [80, '80%'], [60, '60%'], [40, '40%']].map(([n, t]) => `<button data-voltv="${n}" class="${(c.volumenTV || 0) === n ? 'on' : ''}">${t}</button>`).join('')}</div>
+            <span style="font-size:13px;line-height:1.4">${estadoVolumenTV()}</span></div>`;
+  }
+  function tvHDMI(c) {
+    const pcs = Object.keys(c.pcs || {}).filter((n) => n !== 'CENTRAL');
+    if (pcs.indexOf(PC) < 0) pcs.unshift(PC);
+    const elegida = c.tvPC || '';
+    return `<div class="campo"><label for="cTVPC">PC con el TV enchufado</label><select id="cTVPC"><option value="">Elegí una PC…</option>${pcs.map((n) => `<option value="${esc(n)}" ${n === elegida ? 'selected' : ''}>${esc(n)}${n === PC ? ' (esta PC)' : ''}</option>`).join('')}</select></div>
+          <div class="campo"><label>En qué pantalla</label><div class="segc">${[['', 'Automático'], ['1', 'Principal'], ['2', 'Segunda pantalla']].map(([v, t]) => `<button data-tvpan="${v}" class="${(c.tvPantalla || '') === v ? 'on' : ''}">${t}</button>`).join('')}</div>
+            <span style="font-size:13px;color:var(--muted)">Automático: si la PC tiene monitor y TV, usa el TV.</span></div>
+          ${elegida ? `<div class="hdmi-ok"><b>En ${esc(elegida)}, TeToca se encarga solo de:</b>
+            <ul><li>abrir la pantalla de sala al prender la PC, a pantalla completa;</li><li>que el llamado suene sin tener que hacer clic;</li>
+            <li>volver a abrirla si alguien la cierra;</li><li>que la pantalla no se apague ni la PC se suspenda.</li></ul>
+            <span>Para salir de la pantalla de sala en esa PC: tecla <span class="kbd2">Esc</span> tres veces seguidas.</span></div>` : '<p class="nota">Elegí la PC que tiene el TV enchufado por HDMI. Tiene que tener TeToca instalado.</p>'}
+          <div class="campo"><label>Sonido en el TV</label><button class="chico" id="cProbarTV">Probar sonido en el TV</button>
+            <span id="cTVSon" style="font-size:13px;line-height:1.4">${resultadoSonidoTV()}</span></div>`;
+  }
   function vistaConfig() {
     const c = V.config, yo = miConf(), u = V.update || {}, temaAct = aplicarTema();
     const son = T.SONIDOS.map(([id, n, d], i) => `<div class="son ${c.sonido === id ? 'on' : ''}">
@@ -522,13 +545,12 @@
             <div class="mini" style="background:${bg};${id === 'contraste' ? 'outline:1px solid #FFE600;outline-offset:-1px' : ''}"><div class="t" style="background:${top};border-bottom:1px solid ${id === 'albiceleste' ? '#74ACDF' : 'rgba(128,128,128,.25)'}"></div>
               <div class="c"><div class="a" style="background:${card};border:1px solid rgba(128,128,128,.25)"><i style="background:${txt};width:80%"></i><i style="background:${acc};width:45%"></i></div><div class="l" style="background:${pan};border:1px solid rgba(128,128,128,.25)"></div></div></div>
             <b>${n}${id === 'noche' ? ' <span style="font-weight:600;color:var(--muted);font-size:12px">(actual)</span>' : ''}</b><small>${d}</small></button>`).join('')}</div></div>
-        <div class="card pad" style="grid-column:1/-1"><h2>Televisor</h2><p class="s">Si el TV se conecta pero no muestra la pantalla de sala, probá el otro receptor. Los dos son gratuitos.</p>
-          <div class="campo"><label>Receptor</label><div class="segc"><button data-rec="dashcast" class="${(c.tv.receptor || 'dashcast') === 'dashcast' ? 'on' : ''}">DashCast (recomendado)</button><button data-rec="urlcast" class="${c.tv.receptor === 'urlcast' ? 'on' : ''}">URL Cast Receiver</button></div>
-          <a href="/tv" target="_blank" class="chico" style="text-decoration:none">Abrir pantalla de sala en el navegador</a></div>
-          <div class="campo"><label>Sonido en el TV</label><button class="chico" id="cProbarTV">Probar sonido en el TV</button>
-            <span id="cTVSon" style="font-size:13px;line-height:1.4">${resultadoSonidoTV()}</span></div>
-          <div class="campo"><label>Volumen del Chromecast</label><div class="segc">${[[0, 'Automático'], [100, '100%'], [80, '80%'], [60, '60%'], [40, '40%']].map(([n, t]) => `<button data-voltv="${n}" class="${(c.volumenTV || 0) === n ? 'on' : ''}">${t}</button>`).join('')}</div>
-            <span style="font-size:13px;line-height:1.4">${estadoVolumenTV()}</span></div></div>
+        <div class="card pad" style="grid-column:1/-1"><h2>Televisor</h2><p class="s">Cómo llega la pantalla de sala al TV.</p>
+          <div class="conexion">
+            <button data-tvcon="" class="${c.tvConexion !== 'hdmi' ? 'on' : ''}"><b>Chromecast</b><small>El TV recibe la pantalla por wifi. TeToca lo busca en la red y se reconecta solo.</small></button>
+            <button data-tvcon="hdmi" class="${c.tvConexion === 'hdmi' ? 'on' : ''}"><b>Cable HDMI a una PC</b><small>Una PC con el TV enchufado muestra la pantalla de sala a pantalla completa.</small></button>
+          </div>
+          ${c.tvConexion === 'hdmi' ? tvHDMI(c) : tvChromecast(c)}</div>
       </div></div>`;
     document.querySelectorAll('[data-play]').forEach((b) => { b.onclick = () => { const id = b.dataset.play; sonando = id; const d = T.tocar(id); vistaConfig(); setTimeout(() => { sonando = null; if (vista === 'config' && !enEdicion()) vistaConfig(); }, d * 1000); }; });
     document.querySelectorAll('[data-elegir]').forEach((b) => { b.onclick = () => { T.tocar(b.dataset.elegir); api('/api/config', { sonido: b.dataset.elegir }); }; });
@@ -537,6 +559,9 @@
     document.querySelectorAll('[data-estilo]').forEach((b) => { b.onclick = () => { estilo = b.dataset.estilo; guardarLocal('tetoca-estilo', estilo); render(); }; });
     document.querySelectorAll('[data-temtv]').forEach((b) => { b.onclick = () => api('/api/config', { temaTV: b.dataset.temtv }); });
     document.querySelectorAll('[data-rec]').forEach((b) => { b.onclick = () => api('/api/tv/receptor', { receptor: b.dataset.rec }); });
+    document.querySelectorAll('[data-tvcon]').forEach((b) => { b.onclick = () => api('/api/config', { tvConexion: b.dataset.tvcon }); });
+    document.querySelectorAll('[data-tvpan]').forEach((b) => { b.onclick = () => api('/api/config', { tvPantalla: b.dataset.tvpan }); });
+    if ($('cTVPC')) $('cTVPC').onchange = () => api('/api/config', { tvPC: $('cTVPC').value });
     document.querySelectorAll('[data-voltv]').forEach((b) => { b.onclick = () => api('/api/config', { volumenTV: +b.dataset.voltv }); });
     $('cProbarTV').onclick = () => { esperandoPrueba = Date.now(); api('/api/tv/probar-sonido', {}); vistaConfig(); };
     $('cBox').onchange = () => api('/api/pc', { pc: PC, box: $('cBox').value.trim() });
